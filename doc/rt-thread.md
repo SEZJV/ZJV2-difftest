@@ -19,3 +19,8 @@ $ scons
 ```bash
 $ ./qemu-nographic.sh
 ```
+
+
+## Reference
+
+https://github.com/OSCPU/ysyx/blob/main/events/2021-08-18_RT-Thread_Porting/RT-thread%E7%A7%BB%E6%A4%8D.pdf
