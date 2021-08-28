@@ -34,9 +34,9 @@ $(TARGET_DIR)/emulator:
 	verilator $(VERILATOR_FLAGS) -o $(TARGET_DIR)/emulator -Mdir $(VERILATOR_DEST_DIR)/build $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(VERILATOR_SOURCE)
 	$(MAKE) -C $(VERILATOR_DEST_DIR)/build -f $(VERILATOR_DEST_DIR)/build/VTileForVerilator.mk
 
-#$(UCORE_PREFIX).hex: $(UCORE_PREFIX)
-	#$(CROSS_COMPILE)objcopy -O binary $< $(UCORE_PREFIX).bin
-	#od -t x1 -An -w1 -v $(UCORE_PREFIX).bin > $@
+prepare:
+	cd riscv-tests && autoconf && ./configure --prefix=/tools/riscv-elf
+	cd riscv-tests && $(MAKE)
 
 clean:
 	-@rm -rf $(TARGET_DIR)
