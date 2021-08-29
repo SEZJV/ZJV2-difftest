@@ -81,7 +81,7 @@ bool pc_in_ex_entry(uint32_t pc) {
            pc == 0x80000180 || pc == 0x80000200;
 }
 
-void difftest_start_qemu(int port, int ppid) {
+void difftest_start_qemu(const char *path, int use_sbi, int port, int ppid) {
     // install a parent death signal in the child
     int r = prctl(PR_SET_PDEATHSIG, SIGTERM);
     if (r == -1) { panic("prctl error"); }
@@ -90,8 +90,7 @@ void difftest_start_qemu(int port, int ppid) {
 
     close(0); // close STDIN
 
-    extern char *symbol_file;
-    qemu_start(symbol_file, port);    // start qemu in single-step mode and stub gdb
+    qemu_start(path, use_sbi, port);    // start qemu in single-step mode and stub gdb
 }
 
 // #define DiffAssert(cond, fmt, ...)                        \
@@ -161,11 +160,10 @@ bool difftest_regs(qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs) 
     return true;
 }
 
-void difftest_body(int port) {
+void difftest_body(const char *path, int port) {
     qemu_regs_t regs = {0};
     qemu_regs_t dut_regs = {0};
     diff_pcs dut_pcs = {0};
-    extern char *symbol_file;
     uint32_t bc = 0;
     uint64_t duts = 0;
 
@@ -175,14 +173,15 @@ void difftest_body(int port) {
     qemu_conn_t *conn = qemu_connect(port);
 
     extern vaddr_t elf_entry;
-    regs.pc = elf_entry;
-    qemu_setregs(conn, &regs);
+//    regs.pc = elf_entry;
+//    qemu_setregs(conn, &regs);
     qemu_break(conn, elf_entry);
     qemu_continue(conn);
     qemu_remove_breakpoint(conn, elf_entry);
-    qemu_setregs(conn, &regs);
+//    qemu_setregs(conn, &regs);
 
-    dut_reset(10, symbol_file);
+    // set up device under test
+    dut_reset(10, path);
     dut_sync_reg(0, 0, false);
 
     while (1) {
@@ -226,15 +225,15 @@ void difftest_body(int port) {
     qemu_disconnect(conn);
 }
 
-void difftest() {
+void difftest(const char *path, int use_sbi) {
     int port = 1234;
     int ppid = getpid();
 
     printf("Welcome to ZJV2 differential test with QEMU!\n");
 
     if (fork() != 0) {    // child process
-        difftest_body(port);
+        difftest_body(path, port);
     } else {              // parent process
-        difftest_start_qemu(port, ppid);
+        difftest_start_qemu(path, use_sbi, port, ppid);
     }
 }

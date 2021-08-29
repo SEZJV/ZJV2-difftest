@@ -21,7 +21,7 @@ typedef union {
     };
 } qemu_regs_t;
 
-int qemu_start(const char *elf, int port);
+int qemu_start(const char *elf, int use_sbi, int port);
 
 qemu_conn_t *qemu_connect(int port);
 

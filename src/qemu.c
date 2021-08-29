@@ -25,12 +25,17 @@
   })
 #endif
 
-int qemu_start(const char *elf, int port) {
+int qemu_start(const char *elf, int use_sbi, int port) {
     char remote_s[100];
     const char *exec = "qemu-system-riscv64";
     snprintf(remote_s, sizeof(remote_s), "tcp::%d", port);
 
-    execlp(exec, exec, "-S", "-gdb", remote_s, "-kernel", elf, "-M", "virt", "-m", "64M", "-nographic", NULL);
+    if (use_sbi) {
+        execlp(exec, exec, "-S", "-gdb", remote_s, "-kernel", elf, "-M", "virt", "-m", "64M", "-nographic", NULL);
+    } else {
+        execlp(exec, exec, "-S", "-gdb", remote_s, "-bios", elf, "-M", "virt", "-m", "64M", "-nographic", NULL);
+    }
+
     return -1;
 }
 
