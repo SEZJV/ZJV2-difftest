@@ -4,7 +4,6 @@ SRC_DIR     := $(CURDIR)/src
 OBJ_DIR     := $(TARGET_DIR)/obj
 
 CROSS_COMPILE := riscv64-unknown-linux-gnu-
-#UCORE_PREFIX  := $(CURDIR)/elf/ucore-kernel-initrd
 
 SRC         := $(wildcard $(SRC_DIR)/*.c)
 OBJ         := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
@@ -12,7 +11,7 @@ OBJ         := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 CC          := gcc
 CFLAGS      := -I$(INCLUDE_DIR) -O3
 
-VERILATOR_VSRC_DIR	:=	$(CURDIR)/verilog
+VERILATOR_VSRC_DIR	:=	$(CURDIR)/../build/verilog/tile
 VERILATOR_CSRC_DIR	:=	$(CURDIR)/src
 VERILATOR_DEST_DIR	:=	$(TARGET_DIR)/verilator
 VERILATOR_CXXFLAGS	:=	-O3 -std=c++11 -fpermissive -g -I$(VERILATOR_CSRC_DIR) -I$(VERILATOR_DEST_DIR)/build -I$(INCLUDE_DIR)
