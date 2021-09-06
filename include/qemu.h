@@ -42,7 +42,7 @@ bool qemu_single_step(qemu_conn_t *conn);
 void qemu_break(qemu_conn_t *conn, uint64_t entry);
 
 void qemu_remove_breakpoint(
-        qemu_conn_t *conn, uint32_t entry);
+        qemu_conn_t *conn, uint64_t entry);
 
 void qemu_continue(qemu_conn_t *conn);
 
