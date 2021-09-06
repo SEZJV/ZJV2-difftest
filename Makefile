@@ -26,6 +26,8 @@ VERILATOR_FLAGS := --cc --exe --top-module TileForVerilator	\
 				  -CFLAGS "$(VERILATOR_CXXFLAGS)" \
 				  -LDFLAGS "$(VERILATOR_LDFLAGS)"
 
+RV_TESTS_DIR	:= $(CURDIR)/riscv-tests
+
 all: $(TARGET_DIR)/emulator
 
 $(TARGET_DIR)/emulator:
@@ -34,8 +36,10 @@ $(TARGET_DIR)/emulator:
 	$(MAKE) -C $(VERILATOR_DEST_DIR)/build -f $(VERILATOR_DEST_DIR)/build/VTileForVerilator.mk
 
 prepare:
-	cd riscv-tests && autoconf && ./configure --prefix=/tools/riscv-elf
-	cd riscv-tests && $(MAKE)
+	mkdir -p build/cases
+	cd $(RV_TESTS_DIR) && autoconf && ./configure --prefix=/tools/riscv-elf
+	cd $(RV_TESTS_DIR) && $(MAKE)
+	cp -v $(RV_TESTS_DIR)/isa/rv64mi-* build/cases
 
 clean:
 	-@rm -rf $(TARGET_DIR)
