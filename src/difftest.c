@@ -9,24 +9,24 @@
 
 // dump qemu registers
 void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
-    if (wpc) eprintf("$pc:%08x\n", regs->pc - 4);
+    if (wpc) eprintf("$pc:%08x\n", regs->pc);
 //    eprintf("$cs:0x%08x  $hi:0x%08x  $lo:0x%08x  $sr:0x%08x\n",
 //            regs->cause, regs->hi, regs->lo, regs->sr);
-    eprintf("$zero:0x%08x  $ra:0x%08x  $sp:0x%08x  $gp:0x%08x\n",
+    eprintf("$zero:0x%08x  $ra:0x%08x  $sp: 0x%08x  $gp: 0x%08x\n",
             regs->gpr[0], regs->gpr[1], regs->gpr[2], regs->gpr[3]);
-    eprintf("$tp:0x%08x  $t0:0x%08x  $t1:0x%08x  $t2:0x%08x\n",
+    eprintf("$tp:  0x%08x  $t0:0x%08x  $t1: 0x%08x  $t2: 0x%08x\n",
             regs->gpr[4], regs->gpr[5], regs->gpr[6], regs->gpr[7]);
-    eprintf("$fp:0x%08x  $s1:0x%08x  $a0:0x%08x  $a1:0x%08x\n",
+    eprintf("$fp:  0x%08x  $s1:0x%08x  $a0: 0x%08x  $a1: 0x%08x\n",
             regs->gpr[8], regs->gpr[9], regs->gpr[10], regs->gpr[11]);
-    eprintf("$a2:0x%08x  $a3:0x%08x  $a4:0x%08x  $a5:0x%08x\n",
+    eprintf("$a2:  0x%08x  $a3:0x%08x  $a4: 0x%08x  $a5: 0x%08x\n",
             regs->gpr[12], regs->gpr[13], regs->gpr[14], regs->gpr[15]);
-    eprintf("$a6:0x%08x  $a7:0x%08x  $s2:0x%08x  $s3:0x%08x\n",
+    eprintf("$a6:  0x%08x  $a7:0x%08x  $s2: 0x%08x  $s3: 0x%08x\n",
             regs->gpr[16], regs->gpr[17], regs->gpr[18], regs->gpr[19]);
-    eprintf("$s4:0x%08x  $s5:0x%08x  $s6:0x%08x  $s7:0x%08x\n",
+    eprintf("$s4:  0x%08x  $s5:0x%08x  $s6: 0x%08x  $s7: 0x%08x\n",
             regs->gpr[20], regs->gpr[21], regs->gpr[22], regs->gpr[23]);
-    eprintf("$s8:0x%08x  $s9:0x%08x  $s10:0x%08x  $s11:0x%08x\n",
+    eprintf("$s8:  0x%08x  $s9:0x%08x  $s10:0x%08x  $s11:0x%08x\n",
             regs->gpr[24], regs->gpr[25], regs->gpr[26], regs->gpr[27]);
-    eprintf("$t3:0x%08x  $t4:0x%08x  $t5:0x%08x  $t6:0x%08x\n",
+    eprintf("$t3:  0x%08x  $t4:0x%08x  $t5: 0x%08x  $t6: 0x%08x\n",
             regs->gpr[28], regs->gpr[29], regs->gpr[30], regs->gpr[31]);
 }
 
@@ -47,12 +47,6 @@ bool inst_is_branch(Inst inst) {
 
     return false;
 }
-
-//bool inst_is_mfc0(Inst inst) {
-//    if (inst.op == 0x10 && inst.rs == 0x0 && inst.shamt == 0)
-//        return true;
-//    return false;
-//}
 
 bool inst_is_load_mmio(Inst inst, qemu_regs_t *regs) {
     if (inst.op == 0x23) {
@@ -167,12 +161,12 @@ void difftest_body(const char *path, int port) {
     qemu_conn_t *conn = qemu_connect(port);
 
     extern vaddr_t elf_entry;
-//    regs.pc = elf_entry;
-//    qemu_setregs(conn, &regs);
+    regs.pc = elf_entry;
+    qemu_setregs(conn, &regs);
     qemu_break(conn, elf_entry);
     qemu_continue(conn);
     qemu_remove_breakpoint(conn, elf_entry);
-//    qemu_setregs(conn, &regs);
+    qemu_setregs(conn, &regs);
 
     // set up device under test
     dut_reset(10, path);

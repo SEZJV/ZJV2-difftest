@@ -15,7 +15,7 @@
 #include "debug.h"
 #include "gdb_proto.h"
 
-extern char *symbol_file;
+// extern char *symbol_file;
 
 // void init_sdl();
 void gdb_server_mainloop(int port);
@@ -24,7 +24,7 @@ int start_gdb(int port) {
     char symbol_s[100], remote_s[100];
     const char *exec = "riscv64-unknown-elf-gdb";
 
-    snprintf(symbol_s, sizeof(symbol_s), "symbol %s", symbol_file);
+    // snprintf(symbol_s, sizeof(symbol_s), "symbol %s", symbol_file);
     snprintf(remote_s, sizeof(remote_s), "target remote 127.0.0.1:%d", port);
     execlp(exec, exec, "-ex", symbol_s, "-ex", remote_s, NULL);
 
