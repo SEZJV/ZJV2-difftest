@@ -75,12 +75,6 @@ bool inst_is_mmio(Inst inst, qemu_regs_t *regs) {
            inst_is_store_mmio(inst, regs);
 }
 
-bool pc_in_ex_entry(uint32_t pc) {
-    return pc == 0xbfc00200 || pc == 0xbfc00380 ||
-           pc == 0xbfc00400 || pc == 0x80000000 ||
-           pc == 0x80000180 || pc == 0x80000200;
-}
-
 void difftest_start_qemu(const char *path, int use_sbi, int port, int ppid) {
     // install a parent death signal in the child
     int r = prctl(PR_SET_PDEATHSIG, SIGTERM);

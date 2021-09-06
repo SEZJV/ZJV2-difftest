@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define CPU_INIT_PC 0xbfc00000
+#define CPU_INIT_PC 0x80000000
 
 #define CP0_RESERVED_BASE 0 // for segment
 #define CP0_RESERVED_SERIAL 1

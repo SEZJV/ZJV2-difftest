@@ -71,7 +71,16 @@ $ sudo make install
 ```bash
 $ cd ZJV2-difftest
 # prepare test cases
-$ make prepare
+$ make prepare ELF=<test-elf-program>
 $ make
+$ cd build && ./emulator -elf cases/<test-elf-program>
 ```
 
+The following is a simple use case:
+
+```bash
+$ cd ZJV2-difftest
+$ make prepare ELF=rv64mi-p-access
+$ make
+$ cd build && ./emulator -elf cases/rv64mi-p-access
+```

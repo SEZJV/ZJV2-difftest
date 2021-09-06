@@ -3,7 +3,7 @@ INCLUDE_DIR := $(CURDIR)/include
 SRC_DIR     := $(CURDIR)/src
 OBJ_DIR     := $(TARGET_DIR)/obj
 
-CROSS_COMPILE := riscv64-unknown-linux-gnu-
+CROSS_COMPILE := riscv64-unknown-elf-
 
 SRC         := $(wildcard $(SRC_DIR)/*.c)
 OBJ         := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
@@ -32,14 +32,19 @@ all: $(TARGET_DIR)/emulator
 
 $(TARGET_DIR)/emulator:
 	mkdir -p $(VERILATOR_DEST_DIR)
-	verilator $(VERILATOR_FLAGS) -o $(TARGET_DIR)/emulator -Mdir $(VERILATOR_DEST_DIR)/build $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(VERILATOR_SOURCE)
+	verilator $(VERILATOR_FLAGS) -o $(TARGET_DIR)/emulator -Mdir $(VERILATOR_DEST_DIR)/build $(TARGET_DIR)/TileForVerilator.v $(VERILATOR_SOURCE)
 	$(MAKE) -C $(VERILATOR_DEST_DIR)/build -f $(VERILATOR_DEST_DIR)/build/VTileForVerilator.mk
 
 prepare:
 	mkdir -p build/cases
 	cd $(RV_TESTS_DIR) && autoconf && ./configure --prefix=/tools/riscv-elf
 	cd $(RV_TESTS_DIR) && $(MAKE)
-	cp -v $(RV_TESTS_DIR)/isa/rv64mi-* build/cases
+	cp -v $(RV_TESTS_DIR)/isa/$(ELF) $(TARGET_DIR)/cases
+	cp -v $(RV_TESTS_DIR)/isa/$(ELF).dump $(TARGET_DIR)/cases
+	$(CROSS_COMPILE)objcopy -O binary $(TARGET_DIR)/cases/$(ELF) $(TARGET_DIR)/cases/$(ELF).bin
+	od -t x1 -An -w1 -v $(TARGET_DIR)/cases/$(ELF).bin > $(TARGET_DIR)/cases/$(ELF).hex
+	cp -v $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(TARGET_DIR)/TileForVerilator.v
+	sed -i 's/TESTFILE/cases\/$(ELF).hex/g' $(TARGET_DIR)/TileForVerilator.v
 
 clean:
 	-@rm -rf $(TARGET_DIR)
