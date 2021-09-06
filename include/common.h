@@ -8,25 +8,6 @@
 #include <stdint.h>
 #include <string.h>
 
-typedef uint32_t rtlreg_t;
-
-typedef uint32_t paddr_t;
-typedef uint32_t vaddr_t;
-
-typedef uint16_t ioaddr_t;
-
-typedef uint64_t u64;
-typedef uint32_t u32;
-typedef uint16_t u16;
-typedef uint8_t u8;
-
-typedef union {
-  struct {
-    uint32_t lo, hi;
-  };
-  uint64_t val;
-  int64_t sval;
-} L64_t;
 
 #define glue_prim(a, b) a##b
 #define glue(a, b) glue_prim(a, b)

@@ -6,7 +6,7 @@
 
 
 // const char *symbol_file = "../elf/ucore-kernel-initrd";
-vaddr_t elf_entry = 0x80000000;
+uint64_t elf_entry = 0x80000000;
 
 
 void help() {

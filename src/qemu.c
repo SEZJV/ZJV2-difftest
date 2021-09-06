@@ -94,13 +94,12 @@ bool qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
     int i;
     uint8_t *p = reply;
     uint8_t c;
-    for (i = 0; i < sizeof(qemu_regs_t) / sizeof(uint32_t);
-         i++) {
-        c = p[8];
-        p[8] = '\0';
+    for (i = 0; i < sizeof(qemu_regs_t) / sizeof(uint64_t); i++) {
+        c = p[16];
+        p[16] = '\0';
         r->array[i] = gdb_decode_hex_str(p);
-        p[8] = c;
-        p += 8;
+        p[16] = c;
+        p += 16;
     }
 
     free(reply);
@@ -143,9 +142,9 @@ bool qemu_single_step(qemu_conn_t *conn) {
     return true;
 }
 
-void qemu_break(qemu_conn_t *conn, uint32_t entry) {
+void qemu_break(qemu_conn_t *conn, uint64_t entry) {
     char buf[32];
-    snprintf(buf, sizeof(buf), "Z0,%08x,4", entry);
+    snprintf(buf, sizeof(buf), "Z0,%016lx,4", entry);
     gdb_send(conn, (const uint8_t *) buf, strlen(buf));
 
     size_t size;
@@ -153,10 +152,9 @@ void qemu_break(qemu_conn_t *conn, uint32_t entry) {
     free(reply);
 }
 
-void qemu_remove_breakpoint(
-        qemu_conn_t *conn, uint32_t entry) {
+void qemu_remove_breakpoint(qemu_conn_t *conn, uint64_t entry) {
     char buf[32];
-    snprintf(buf, sizeof(buf), "z0,%08x,4", entry);
+    snprintf(buf, sizeof(buf), "z0,%016lx,4", entry);
     gdb_send(conn, (const uint8_t *) buf, strlen(buf));
 
     size_t size;

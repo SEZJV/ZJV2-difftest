@@ -236,9 +236,9 @@ typedef union {
 	struct { uint32_t compare;          uint32_t __[7]; };
 	struct { cp0_status_t status;       uint32_t __[7]; };
 	struct { cp0_cause_t cause;         uint32_t __[7]; };
-	struct { vaddr_t epc;               uint32_t __[7]; };
+	struct { uint64_t epc;               uint32_t __[7]; };
 	struct { cp0_prid_t prid;
-	         vaddr_t ebase;             uint32_t __[6]; };
+	         uint64_t ebase;             uint32_t __[6]; };
 	struct { cp0_config_t config;
 	         cp0_config1_t config1;     uint32_t __[6]; };
   };
@@ -300,9 +300,9 @@ typedef struct {
   uint32_t gpr[32];
   uint32_t hi, lo;
   cp0_t cp0;
-  vaddr_t pc;
+  uint64_t pc;
 
-  vaddr_t br_target;
+  uint64_t br_target;
 #if CONFIG_DELAYSLOT
   bool is_delayslot;
 #endif
@@ -453,7 +453,7 @@ typedef struct {
 } Inst; // Instruction
 
 extern CPU_state cpu;
-int init_cpu(vaddr_t entry);
+int init_cpu(uint64_t entry);
 void nemu_set_irq(int irqno, bool val);
 
 #endif
