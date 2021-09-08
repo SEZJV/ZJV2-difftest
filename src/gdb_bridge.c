@@ -15,10 +15,6 @@
 #include "debug.h"
 #include "gdb_proto.h"
 
-// extern char *symbol_file;
-
-// void init_sdl();
-void gdb_server_mainloop(int port);
 
 int start_gdb(int port) {
     char symbol_s[100], remote_s[100];
@@ -85,22 +81,3 @@ int get_port_of_servfd(int fd) {
     }
     return ntohs(serv_addr.sin_port);
 }
-
-void gdb_mainloop() {
-    int servfd = get_free_servfd();
-    int port = get_port_of_servfd(servfd);
-
-    int pid = fork();
-    if (pid == 0) {
-        // init_sdl();
-        gdb_server_mainloop(servfd);
-    } else {
-        close(servfd);
-        usleep(20000);
-        if (start_gdb(port) < 0) {
-            kill(pid, SIGKILL);
-        }
-        panic("Please install `riscv64-unknown-elf-gdb' firstly\n");
-    }
-}
-

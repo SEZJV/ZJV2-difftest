@@ -16,7 +16,6 @@ $ sudo mv riscv /tools/riscv-elf
 ```
 
 
-
 ### verilator
 
 Get the source code.
@@ -73,7 +72,7 @@ $ cd ZJV2-difftest
 # prepare test cases
 $ make prepare ELF=<test-elf-program>
 $ make
-$ cd build && ./emulator -elf cases/<test-elf-program>
+$ cd build && ./emulator -elf
 ```
 
 The following is a simple use case:
@@ -82,5 +81,5 @@ The following is a simple use case:
 $ cd ZJV2-difftest
 $ make prepare ELF=rv64mi-p-access
 $ make
-$ cd build && ./emulator -elf cases/rv64mi-p-access
+$ cd build && ./emulator -elf
 ```
