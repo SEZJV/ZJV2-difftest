@@ -11,7 +11,7 @@ OBJ         := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 CC          := gcc
 CFLAGS      := -I$(INCLUDE_DIR) -O3
 
-VERILATOR_VSRC_DIR	:=	$(CURDIR)/verilog
+VERILATOR_VSRC_DIR	:=	$(CURDIR)/../build/verilog/tile
 VERILATOR_CSRC_DIR	:=	$(CURDIR)/src
 VERILATOR_DEST_DIR	:=	$(TARGET_DIR)/verilator
 VERILATOR_CXXFLAGS	:=	-O3 -std=c++11 -fpermissive -g -I$(VERILATOR_CSRC_DIR) -I$(VERILATOR_DEST_DIR)/build -I$(INCLUDE_DIR)
@@ -36,16 +36,14 @@ $(TARGET_DIR)/emulator: $(TARGET_DIR)/TileForVerilator.v
 	$(MAKE) -C $(VERILATOR_DEST_DIR)/build -f $(VERILATOR_DEST_DIR)/build/VTileForVerilator.mk
 
 prepare:
-	mkdir -p build/cases
-	cd $(RV_TESTS_DIR) && autoconf && ./configure --prefix=/opt
+	mkdir -p build
+	cd $(RV_TESTS_DIR) && autoconf && ./configure --prefix=/tools/riscv-elf
 	cd $(RV_TESTS_DIR) && $(MAKE)
-	cp -v $(RV_TESTS_DIR)/isa/$(ELF) $(TARGET_DIR)/cases
-	cp -v $(RV_TESTS_DIR)/isa/$(ELF).dump $(TARGET_DIR)/cases
-	$(CROSS_COMPILE)objcopy -O binary $(TARGET_DIR)/cases/$(ELF) $(TARGET_DIR)/cases/$(ELF).bin
-	od -t x4 -An -w4 -v $(TARGET_DIR)/cases/$(ELF).bin > $(TARGET_DIR)/cases/$(ELF).hex
+	cp -v $(RV_TESTS_DIR)/isa/$(ELF) $(TARGET_DIR)/testfile.elf
+	cp -v $(RV_TESTS_DIR)/isa/$(ELF).dump $(TARGET_DIR)/testfile.dump
+	$(CROSS_COMPILE)objcopy -O binary $(TARGET_DIR)/testfile.elf $(TARGET_DIR)/testfile.bin
+	od -t x4 -An -w4 -v $(TARGET_DIR)/testfile.bin > $(TARGET_DIR)/testfile.hex
 	cp -v $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(TARGET_DIR)/TileForVerilator.v
-	sed -i 's/TESTFILE/cases\/$(ELF).hex/g' $(TARGET_DIR)/TileForVerilator.v
 
 clean:
 	-@rm -rf $(TARGET_DIR)
-	-@rm $(UCORE_PREFIX).hex $(UCORE_PREFIX).bin
