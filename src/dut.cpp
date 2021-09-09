@@ -1,13 +1,7 @@
 #include "dut.h"
-#include "VTileForVerilator.h"
-
 VTileForVerilator *dut;
 
-void dut_reset(int cycle, char *elf_path) {
-    if (dut) {
-        delete dut;
-    }
-    dut = new VTileForVerilator;
+void dut_reset(int cycle, VerilatedVcdC *vfp, VerilatedContext *context) {
     for (int i = 0; i < cycle; i++) {
         dut->reset = 1;
         dut->clock = 0;
@@ -15,6 +9,8 @@ void dut_reset(int cycle, char *elf_path) {
         dut->clock = 1;
         dut->eval();
         dut->reset = 0;
+        context->timeInc(1);
+        vfp->dump(context->time());
     }
 }
 
@@ -22,12 +18,14 @@ int dut_commit() {
     return (dut->io_difftest_valids_0 != 0) + (dut->io_difftest_valids_1 != 0) + (dut->io_difftest_valids_2 != 0);
 }
 
-void dut_step(int cycle) {
+void dut_step(int cycle, VerilatedVcdC *vfp, VerilatedContext *context) {
     for (int i = 0; i < cycle; i++) {
         dut->clock = 0;
         dut->eval();
         dut->clock = 1;
         dut->eval();
+        context->timeInc(1);
+        vfp->dump(context->time());
     }
 }
 

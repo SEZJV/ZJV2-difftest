@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <sys/prctl.h>
 #include <unistd.h>
+#include <time.h>
+
+#include "verilated_vcd_c.h"
 
 #include "qemu.h"
 #include "reg.h"
 #include "dut.h"
-
+#define WAVE_TRACE
 // dump qemu registers
 void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
     if (wpc) eprintf("$pc:%016lx\n", regs->pc);
@@ -135,7 +138,7 @@ bool difftest_regs(qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs) 
                 for (int j = 0; j < 3; j++) {
                     printf("QEMU PC at [0x%08x]\n", last_3_qpcs[j]);
                 }
-                printf("\x1B[31mError in $%s, QEMU %x, ZJV2 %x\x1B[37m\n", alias[i], regs->gpr[i], dut_regs->gpr[i]);
+                printf("\x1B[31mError in $%s, QEMU %lx, ZJV2 %lx\x1B[37m\n", alias[i], regs->gpr[i], dut_regs->gpr[i]);
                 return false;
             }
         }
@@ -146,7 +149,26 @@ bool difftest_regs(qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs) 
     return true;
 }
 
+char *get_wf_filename() {
+    char *filename = new char[64];
+    time_t now = time(0);
+    strftime(filename, sizeof(filename), "%F", localtime(&now));
+    strcat(filename, ".vcd"); 
+    return filename;
+}
+
 void difftest_body(const char *path, int port) {
+    VerilatedVcdC* vfp;
+    VerilatedContext* contextp;
+    dut = new VTileForVerilator;
+#ifdef WAVE_TRACE
+    Verilated::traceEverOn(true);
+    vfp = new VerilatedVcdC;
+    contextp = new VerilatedContext;
+    dut->trace(vfp, 99);
+    vfp->open("sim.vcd");
+    // dut->dump(0);
+#endif
     qemu_regs_t regs = {0};
     qemu_regs_t dut_regs = {0};
     diff_pcs dut_pcs = {0};
@@ -169,11 +191,22 @@ void difftest_body(const char *path, int port) {
     print_qemu_registers(&regs, true);
 
     // set up device under test
-    dut_reset(10, path);
+    dut_reset(10, vfp, contextp);
     dut_sync_reg(0, 0, false);
 
+    // for(int i = 0; i < 100; i++) {
+    //     dut_step(1, vfp, contextp);
+    // }
+    // vfp->flush();
+    // vfp->close();
+    // delete vfp;
+    // delete contextp;
+    // qemu_disconnect(conn);
+    // printf("end\n");
+    // return;
+
     while (1) {
-        dut_step(1);
+        dut_step(1, vfp, contextp);
         dut_getregs(&dut_regs);
         dut_getpcs(&dut_pcs);
         for (int i = 0; i < 3; i++) {
@@ -185,11 +218,11 @@ void difftest_body(const char *path, int port) {
     }    
 
     while (1) {
-        dut_step(1);
+        dut_step(1, vfp, contextp);
         bc = 0;
         dut_sync_reg(0, 0, false);
         while (dut_commit() == 0) {
-            dut_step(1);
+            dut_step(1, vfp, contextp);
             bc++;
             if (bc > 2048 * 8) {
                 printf("Too many bubbles.\n");
@@ -222,6 +255,11 @@ void difftest_body(const char *path, int port) {
         }
     }
 
+#ifdef WAVE_TRACE
+    vfp->close();
+    delete vfp;
+    delete contextp;
+#endif
     qemu_disconnect(conn);
 }
 
