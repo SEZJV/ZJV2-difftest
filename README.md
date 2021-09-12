@@ -79,7 +79,22 @@ The following is a simple use case:
 
 ```bash
 $ cd ZJV2-difftest
-$ make prepare ELF=rv64mi-p-access
+$ make prepare ELF=add-cpu-tests
 $ make
 $ cd build && ./emulator -elf
+```
+
+To see all test cases:
+
+```bash
+$ make list
+add-cpu-tests
+addi-riscv-tests
+addiw-riscv-tests
+add-longlong-cpu-tests
+add-riscv-tests
+addw-riscv-tests
+andi-riscv-tests
+and-riscv-tests
+...
 ```

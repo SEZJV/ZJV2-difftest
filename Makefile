@@ -27,7 +27,7 @@ VERILATOR_FLAGS := --cc --exe --trace --top-module TileForVerilator	\
 				  -CFLAGS "$(VERILATOR_CXXFLAGS)" \
 				  -LDFLAGS "$(VERILATOR_LDFLAGS)"
 
-RV_TESTS_DIR	:= $(CURDIR)/riscv-tests
+CASES_DIR	:= $(CURDIR)/cases
 
 all: $(TARGET_DIR)/emulator
 
@@ -37,14 +37,18 @@ $(TARGET_DIR)/emulator: $(TARGET_DIR)/TileForVerilator.v $(SRC)
 	$(MAKE) -C $(VERILATOR_DEST_DIR)/build -f $(VERILATOR_DEST_DIR)/build/VTileForVerilator.mk
 
 prepare:
+	echo "Preparing ..."
 	mkdir -p build
-	cd $(RV_TESTS_DIR) && autoconf && ./configure --prefix=/tools/riscv-elf
-	cd $(RV_TESTS_DIR) && $(MAKE)
-	cp -v $(RV_TESTS_DIR)/isa/$(ELF) $(TARGET_DIR)/testfile.elf
-	cp -v $(RV_TESTS_DIR)/isa/$(ELF).dump $(TARGET_DIR)/testfile.dump
+	# cd $(RV_TESTS_DIR) && autoconf && ./configure --prefix=/tools/riscv-elf
+	# cd $(RV_TESTS_DIR) && $(MAKE)
+	cp -v $(CASES_DIR)/$(ELF).elf $(TARGET_DIR)/testfile.elf
+	# cp -v $(RV_TESTS_DIR)/isa/$(ELF).dump $(TARGET_DIR)/testfile.dump
 	$(CROSS_COMPILE)objcopy -O binary $(TARGET_DIR)/testfile.elf $(TARGET_DIR)/testfile.bin
 	od -t x1 -An -w1 -v $(TARGET_DIR)/testfile.bin > $(TARGET_DIR)/testfile.hex
 	cp -v $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(TARGET_DIR)/TileForVerilator.v
+
+list:
+	ls cases | sed 's/.elf//'
 
 clean:
 	-@rm -rf $(TARGET_DIR)
