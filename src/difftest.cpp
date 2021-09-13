@@ -187,8 +187,8 @@ void difftest_body(const char *path, int port) {
     qemu_remove_breakpoint(conn, elf_entry);
     qemu_setregs(conn, &regs);
     qemu_getregs(conn, &regs);
-    printf("\nDEBUG:\n");
-    print_qemu_registers(&regs, true);
+    // printf("\nDEBUG:\n");
+    // print_qemu_registers(&regs, true);
 
     // set up device under test
     dut_reset(10, vfp, contextp);
@@ -205,22 +205,23 @@ void difftest_body(const char *path, int port) {
     // printf("end\n");
     // return;
 
-    while (1) {
-        dut_step(1, vfp, contextp);
-        dut_getregs(&dut_regs);
-        dut_getpcs(&dut_pcs);
-        for (int i = 0; i < 3; i++) {
-            printf("$pc_%d:%016lx  ", i, dut_pcs.mycpu_pcs[i]);
-        }
-        printf("\n");
-        print_qemu_registers(&dut_regs, false);
-        printf("\n");
-    }    
+    // while (1) {
+    //     dut_step(1, vfp, contextp);
+    //     dut_getregs(&dut_regs);
+    //     dut_getpcs(&dut_pcs);
+    //     for (int i = 0; i < 3; i++) {
+    //         printf("$pc_%d:%016lx  ", i, dut_pcs.mycpu_pcs[i]);
+    //     }
+    //     printf("\n");
+    //     print_qemu_registers(&dut_regs, false);
+    //     printf("\n");
+    // }    
 
     while (1) {
         dut_step(1, vfp, contextp);
         bc = 0;
         dut_sync_reg(0, 0, false);
+
         while (dut_commit() == 0) {
             dut_step(1, vfp, contextp);
             bc++;
@@ -229,17 +230,19 @@ void difftest_body(const char *path, int port) {
                 break;
             }
         }
-        if (bc > 2048 * 8) {
-            break;
-        }
+
+        // if (bc > 2048 * 8) {
+            // break;
+        // }
         for (int i = 0; i < dut_commit(); i++) {
             qemu_single_step(conn);
         }
-        qemu_getregs(conn, &regs);
+        // qemu_getregs(conn, &regs);
 
         qemu_getregs(conn, &regs);
         dut_getregs(&dut_regs);
         dut_getpcs(&dut_pcs);
+
         if (!difftest_regs(&regs, &dut_regs, &dut_pcs)) {
             sleep(2);
             printf("\nQEMU\n");
