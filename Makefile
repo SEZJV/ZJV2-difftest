@@ -44,6 +44,7 @@ prepare:
 	cp -v $(CASES_DIR)/$(ELF).elf $(TARGET_DIR)/testfile.elf
 	# cp -v $(RV_TESTS_DIR)/isa/$(ELF).dump $(TARGET_DIR)/testfile.dump
 	$(CROSS_COMPILE)objcopy -O binary $(TARGET_DIR)/testfile.elf $(TARGET_DIR)/testfile.bin
+	$(CROSS_COMPILE)objdump -d $(TARGET_DIR)/testfile.elf > $(TARGET_DIR)/testfile.dump
 	od -t x1 -An -w1 -v $(TARGET_DIR)/testfile.bin > $(TARGET_DIR)/testfile.hex
 	cp -v $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(TARGET_DIR)/TileForVerilator.v
 
