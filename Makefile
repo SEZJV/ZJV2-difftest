@@ -31,7 +31,9 @@ CASES_DIR	:= $(CURDIR)/cases
 
 all: $(TARGET_DIR)/emulator
 
-$(TARGET_DIR)/emulator: $(TARGET_DIR)/TileForVerilator.v $(SRC)
+$(TARGET_DIR)/emulator: $(SRC)
+	mkdir -p build
+	cp -v $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(TARGET_DIR)/TileForVerilator.v
 	mkdir -p $(VERILATOR_DEST_DIR)
 	verilator $(VERILATOR_FLAGS) -o $(TARGET_DIR)/emulator -Mdir $(VERILATOR_DEST_DIR)/build $(TARGET_DIR)/TileForVerilator.v $(VERILATOR_SOURCE)
 	$(MAKE) -C $(VERILATOR_DEST_DIR)/build -f $(VERILATOR_DEST_DIR)/build/VTileForVerilator.mk
@@ -39,20 +41,12 @@ $(TARGET_DIR)/emulator: $(TARGET_DIR)/TileForVerilator.v $(SRC)
 prepare:
 	echo "Preparing ..."
 	mkdir -p build
-	# cd $(RV_TESTS_DIR) && autoconf && ./configure --prefix=/tools/riscv-elf
-	# cd $(RV_TESTS_DIR) && $(MAKE)
 	cp -v $(CASES_DIR)/$(ELF).elf $(TARGET_DIR)/testfile.elf
 	$(CROSS_COMPILE)objdump -d $(TARGET_DIR)/testfile.elf > $(TARGET_DIR)/testfile.dump
-	# cp -v $(RV_TESTS_DIR)/isa/$(ELF).dump $(TARGET_DIR)/testfile.dump
 	$(CROSS_COMPILE)objcopy -O binary $(TARGET_DIR)/testfile.elf $(TARGET_DIR)/testfile.bin
 	$(CROSS_COMPILE)objdump -d $(TARGET_DIR)/testfile.elf > $(TARGET_DIR)/testfile.dump
 	od -t x1 -An -w1 -v $(TARGET_DIR)/testfile.bin > $(TARGET_DIR)/testfile.hex
-	cp -v $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(TARGET_DIR)/TileForVerilator.v
 
-# ci: $(TARGET_DIR)/emulator
-
-list:
-	ls cases | sed 's/.elf//'
 
 clean:
 	-@rm -rf $(TARGET_DIR)
