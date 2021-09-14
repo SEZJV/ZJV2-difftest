@@ -159,6 +159,25 @@ char *get_wf_filename() {
     return filename;
 }
 
+bool check_end_ysyx() {
+    return dut->io_difftest_finish;
+}
+
+bool check_and_close_difftest(qemu_conn_t *conn, VerilatedVcdC* vfp, VerilatedContext* context) {
+    if (check_end_ysyx()) {
+        printf("difftest pass!\n");
+#ifdef WAVE_TRACE
+        dut_step(100, vfp, context);
+        vfp->close();
+        delete vfp;
+        delete context;
+#endif
+        qemu_disconnect(conn);
+        return true;
+    }
+    return false;
+}
+
 int difftest_body(const char *path, int port) {
     int result = 0;
 
@@ -211,11 +230,13 @@ int difftest_body(const char *path, int port) {
 
     while (1) {
         dut_step(1, vfp, contextp);
+        if (check_and_close_difftest(conn, vfp, contextp)) return 0;
         bc = 0;
         dut_sync_reg(0, 0, false);
 
         while (dut_commit() == 0) {
             dut_step(1, vfp, contextp);
+            if (check_and_close_difftest(conn, vfp, contextp)) return 0;
             bc++;
             if (bc > 2048 * 8) {
                 printf("Too many bubbles.\n");
