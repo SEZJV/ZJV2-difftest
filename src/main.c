@@ -17,6 +17,8 @@ void help() {
 
 
 int main(int argc, char *argv[]) {
+    int result = 0;
+
     if (argc < 1) {
         printf("too few arguments\n\n");
         help();
@@ -26,12 +28,12 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[1], "-help")) {
         help();
     } else if (!strcmp(argv[1], "-os") || !strcmp(argv[1], "-elf")) {
-        difftest("testfile.elf", !strcmp(argv[1], "-os"));
+        result = difftest("testfile.elf", !strcmp(argv[1], "-os"));
     } else {
         printf("invalid option\n\n");
         help();
         return 1;
     }
 
-    return 0;
+    return result;
 }

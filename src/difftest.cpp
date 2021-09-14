@@ -9,10 +9,12 @@
 #include "qemu.h"
 #include "reg.h"
 #include "dut.h"
+
 #define WAVE_TRACE
+
 // dump qemu registers
 void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
-    if (wpc) eprintf("$pc:%016lx\n", regs->pc);
+    if (wpc) eprintf("$pc:  0x%016lx\n", regs->pc);
     eprintf("$zero:0x%016lx  $ra:0x%016lx  $sp: 0x%016lx  $gp: 0x%016lx\n",
             regs->gpr[0], regs->gpr[1], regs->gpr[2], regs->gpr[3]);
     eprintf("$tp:  0x%016lx  $t0:0x%016lx  $t1: 0x%016lx  $t2: 0x%016lx\n",
@@ -105,16 +107,16 @@ difftest_finish_qemu(qemu_conn_t *conn) {
     abort();
 }
 
-bool in_sync_addr(diff_pcs *dut_pcs) {
-    static const int alen = 2;
-    static uint32_t mfc0_count_pcs[alen] = {0x800058ec, 0x80024b7c};
-    for (int i = 0; i < alen; i++) {
-        for (int j = 0; j < 3; j++) {
-            if (dut_pcs->mycpu_pcs[j] == mfc0_count_pcs[i]) return true;
-        }
-    }
-    return false;
-}
+// bool in_sync_addr(diff_pcs *dut_pcs) {
+//     static const int alen = 2;
+//     static uint32_t mfc0_count_pcs[alen] = {0x800058ec, 0x80024b7c};
+//     for (int i = 0; i < alen; i++) {
+//         for (int j = 0; j < 3; j++) {
+//             if (dut_pcs->mycpu_pcs[j] == mfc0_count_pcs[i]) return true;
+//         }
+//     }
+//     return false;
+// }
 
 bool difftest_regs(qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs) {
     const char *alias[32] = {"zero", "ra", "sp", "gp",
@@ -131,16 +133,16 @@ bool difftest_regs(qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs) 
     static uint32_t last_3_qpcs[3] = {0};
     for (int i = 0; i < 32; i++) {
         if (regs->gpr[i] != dut_regs->gpr[i]) {
-            if (in_sync_addr(dut_pcs)) {
-                dut_sync_reg(i, regs->gpr[i], true);
-            } else {
+            // if (in_sync_addr(dut_pcs)) {
+                // dut_sync_reg(i, regs->gpr[i], true);
+            // } else {
                 sleep(2);
                 for (int j = 0; j < 3; j++) {
                     printf("QEMU PC at [0x%08x]\n", last_3_qpcs[j]);
                 }
                 printf("\x1B[31mError in $%s, QEMU %lx, ZJV2 %lx\x1B[37m\n", alias[i], regs->gpr[i], dut_regs->gpr[i]);
                 return false;
-            }
+            // }
         }
     }
     last_3_qpcs[0] = last_3_qpcs[1];
@@ -157,7 +159,9 @@ char *get_wf_filename() {
     return filename;
 }
 
-void difftest_body(const char *path, int port) {
+int difftest_body(const char *path, int port) {
+    int result = 0;
+
     VerilatedVcdC* vfp;
     VerilatedContext* contextp;
     dut = new VTileForVerilator;
@@ -187,8 +191,8 @@ void difftest_body(const char *path, int port) {
     qemu_remove_breakpoint(conn, elf_entry);
     qemu_setregs(conn, &regs);
     qemu_getregs(conn, &regs);
-    printf("\nDEBUG:\n");
-    print_qemu_registers(&regs, true);
+    // printf("\nDEBUG:\n");
+    // print_qemu_registers(&regs, true);
 
     // set up device under test
     dut_reset(10, vfp, contextp);
@@ -207,20 +211,9 @@ void difftest_body(const char *path, int port) {
 
     while (1) {
         dut_step(1, vfp, contextp);
-        dut_getregs(&dut_regs);
-        dut_getpcs(&dut_pcs);
-        for (int i = 0; i < 3; i++) {
-            printf("$pc_%d:%016lx  ", i, dut_pcs.mycpu_pcs[i]);
-        }
-        printf("\n");
-        print_qemu_registers(&dut_regs, false);
-        printf("\n");
-    }    
-
-    while (1) {
-        dut_step(1, vfp, contextp);
         bc = 0;
         dut_sync_reg(0, 0, false);
+
         while (dut_commit() == 0) {
             dut_step(1, vfp, contextp);
             bc++;
@@ -229,28 +222,42 @@ void difftest_body(const char *path, int port) {
                 break;
             }
         }
-        if (bc > 2048 * 8) {
-            break;
-        }
+
+        // if (bc > 2048 * 8) {
+            // break;
+        // }
         for (int i = 0; i < dut_commit(); i++) {
             qemu_single_step(conn);
-        }
-        qemu_getregs(conn, &regs);
 
-        qemu_getregs(conn, &regs);
-        dut_getregs(&dut_regs);
-        dut_getpcs(&dut_pcs);
-        if (!difftest_regs(&regs, &dut_regs, &dut_pcs)) {
-            sleep(2);
+#ifdef TRACE
             printf("\nQEMU\n");
             print_qemu_registers(&regs, true);
             printf("\nDUT\n");
             for (int i = 0; i < 3; i++) {
-                printf("$pc_%d:%016lx  ", i, dut_pcs.mycpu_pcs[i]);
+                printf("$pc_%d:0x%016lx  ", i, dut_pcs.mycpu_pcs[i]);
+            }
+            printf("\n");
+            print_qemu_registers(&dut_regs, false);
+            printf("==============\n");
+#endif
+        }
+
+        qemu_getregs(conn, &regs);
+        dut_getregs(&dut_regs);
+        dut_getpcs(&dut_pcs);
+
+        if (!difftest_regs(&regs, &dut_regs, &dut_pcs)) {
+            sleep(1);
+            printf("\nQEMU\n");
+            print_qemu_registers(&regs, true);
+            printf("\nDUT\n");
+            for (int i = 0; i < 3; i++) {
+                printf("$pc_%d:0x%016lx  ", i, dut_pcs.mycpu_pcs[i]);
             }
             printf("\n");
             print_qemu_registers(&dut_regs, false);
             printf("\n");
+            result = 1;
             break;
         }
     }
@@ -261,17 +268,22 @@ void difftest_body(const char *path, int port) {
     delete contextp;
 #endif
     qemu_disconnect(conn);
+
+    return result;
 }
 
-void difftest(const char *path, int use_sbi) {
+int difftest(const char *path, int use_sbi) {
     int port = 1234;
     int ppid = getpid();
+    int result = 0;
 
     printf("Welcome to ZJV2 differential test with QEMU!\n");
 
     if (fork() != 0) {    // child process
-        difftest_body(path, port);
+        result = difftest_body(path, port);
     } else {              // parent process
         difftest_start_qemu(path, use_sbi, port, ppid);
     }
+
+    return result;
 }
