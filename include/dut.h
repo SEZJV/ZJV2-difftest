@@ -10,6 +10,9 @@ typedef struct {
     uint64_t mycpu_pcs[3];
 } diff_pcs;
 
+
+// #define TRACE
+
 extern VTileForVerilator *dut;
 
 // TODO sync cycle and sync interrupt

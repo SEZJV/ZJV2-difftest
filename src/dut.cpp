@@ -19,14 +19,18 @@ void dut_reset(int cycle, VerilatedVcdC *vfp, VerilatedContext *context) {
 int dut_commit() {
     int commit = (dut->io_difftest_valids_0 != 0) + (dut->io_difftest_valids_1 != 0) + (dut->io_difftest_valids_2 != 0);
 
+#ifdef TRACE
     std::cout << "DUT commits " << commit << " instructions" << std::endl;
+#endif
     
     return commit;
 }
 
 void dut_step(int cycle, VerilatedVcdC *vfp, VerilatedContext *context) {
 
+#ifdef TRACE
     std::cout << "DUT one cycle" << std::endl;
+#endif
 
     for (int i = 0; i < cycle; i++) {
         dut->clock = 0;
