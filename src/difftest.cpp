@@ -159,7 +159,9 @@ char *get_wf_filename() {
     return filename;
 }
 
-void difftest_body(const char *path, int port) {
+int difftest_body(const char *path, int port) {
+    int result = 0;
+
     VerilatedVcdC* vfp;
     VerilatedContext* contextp;
     dut = new VTileForVerilator;
@@ -206,18 +208,6 @@ void difftest_body(const char *path, int port) {
     // qemu_disconnect(conn);
     // printf("end\n");
     // return;
-
-    // while (1) {
-    //     dut_step(1, vfp, contextp);
-    //     dut_getregs(&dut_regs);
-    //     dut_getpcs(&dut_pcs);
-    //     for (int i = 0; i < 3; i++) {
-    //         printf("$pc_%d:%016lx  ", i, dut_pcs.mycpu_pcs[i]);
-    //     }
-    //     printf("\n");
-    //     print_qemu_registers(&dut_regs, false);
-    //     printf("\n");
-    // }    
 
     while (1) {
         dut_step(1, vfp, contextp);
@@ -267,6 +257,7 @@ void difftest_body(const char *path, int port) {
             printf("\n");
             print_qemu_registers(&dut_regs, false);
             printf("\n");
+            result = 1;
             break;
         }
     }
@@ -277,17 +268,22 @@ void difftest_body(const char *path, int port) {
     delete contextp;
 #endif
     qemu_disconnect(conn);
+
+    return result;
 }
 
-void difftest(const char *path, int use_sbi) {
+int difftest(const char *path, int use_sbi) {
     int port = 1234;
     int ppid = getpid();
+    int result = 0;
 
     printf("Welcome to ZJV2 differential test with QEMU!\n");
 
     if (fork() != 0) {    // child process
-        difftest_body(path, port);
+        result = difftest_body(path, port);
     } else {              // parent process
         difftest_start_qemu(path, use_sbi, port, ppid);
     }
+
+    return result;
 }

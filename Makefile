@@ -48,6 +48,8 @@ prepare:
 	od -t x1 -An -w1 -v $(TARGET_DIR)/testfile.bin > $(TARGET_DIR)/testfile.hex
 	cp -v $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(TARGET_DIR)/TileForVerilator.v
 
+# ci: $(TARGET_DIR)/emulator
+
 list:
 	ls cases | sed 's/.elf//'
 
