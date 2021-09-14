@@ -8,6 +8,8 @@ void dut_reset(int cycle, VerilatedVcdC *vfp, VerilatedContext *context) {
         dut->reset = 1;
         dut->clock = 0;
         dut->eval();
+        context->timeInc(1);
+        vfp->dump(context->time());
         dut->clock = 1;
         dut->eval();
         dut->reset = 0;
@@ -35,6 +37,8 @@ void dut_step(int cycle, VerilatedVcdC *vfp, VerilatedContext *context) {
     for (int i = 0; i < cycle; i++) {
         dut->clock = 0;
         dut->eval();
+        context->timeInc(1);
+        vfp->dump(context->time());
         dut->clock = 1;
         dut->eval();
         context->timeInc(1);

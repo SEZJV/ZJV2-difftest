@@ -263,6 +263,7 @@ int difftest_body(const char *path, int port) {
     }
 
 #ifdef WAVE_TRACE
+    dut_step(100, vfp, contextp);
     vfp->close();
     delete vfp;
     delete contextp;
