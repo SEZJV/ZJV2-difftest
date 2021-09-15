@@ -184,9 +184,9 @@ int difftest_body(const char *path, int port) {
     VerilatedVcdC* vfp;
     VerilatedContext* contextp;
     dut = new VTileForVerilator;
+    vfp = new VerilatedVcdC;
 #ifdef WAVE_TRACE
     Verilated::traceEverOn(true);
-    vfp = new VerilatedVcdC;
     contextp = new VerilatedContext;
     dut->trace(vfp, 99);
     vfp->open("sim.vcd");
