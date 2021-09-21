@@ -195,7 +195,7 @@ int difftest_body(const char *path, int port) {
     qemu_regs_t regs = {0};
     qemu_regs_t dut_regs = {0};
     diff_pcs dut_pcs = {0};
-    uint32_t bc = 0;
+    int bubble_count = 0;
     uint64_t duts = 0;
 
     static int ugly_cnt = 0;
@@ -210,8 +210,6 @@ int difftest_body(const char *path, int port) {
     qemu_remove_breakpoint(conn, elf_entry);
     qemu_setregs(conn, &regs);
     qemu_getregs(conn, &regs);
-    // printf("\nDEBUG:\n");
-    // print_qemu_registers(&regs, true);
 
     // set up device under test
     dut_reset(10, vfp, contextp);
@@ -231,18 +229,23 @@ int difftest_body(const char *path, int port) {
     while (1) {
         dut_step(1, vfp, contextp);
         if (check_and_close_difftest(conn, vfp, contextp)) return 0;
-        bc = 0;
+        bubble_count = 0;
         dut_sync_reg(0, 0, false);
 
         while (dut_commit() == 0) {
             dut_step(1, vfp, contextp);
-            if (check_and_close_difftest(conn, vfp, contextp)) return 0;
-            bc++;
-            if (bc > 2048 * 8) {
+            if (check_and_close_difftest(conn, vfp, contextp)) 
+                return 0;
+
+            bubble_count++;
+            // printf("dut bubble count: %d\n", bubble_count);
+
+            if (bubble_count > 10) {
                 printf("Too many bubbles.\n");
                 break;
             }
         }
+
 
         // if (bc > 2048 * 8) {
             // break;
