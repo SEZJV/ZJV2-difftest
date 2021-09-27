@@ -10,7 +10,7 @@
 #include "reg.h"
 #include "dut.h"
 
-// #define WAVE_TRACE
+#define WAVE_TRACE
 
 // dump qemu registers
 void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
@@ -180,14 +180,13 @@ bool check_and_close_difftest(qemu_conn_t *conn, VerilatedVcdC* vfp, VerilatedCo
 
 int difftest_body(const char *path, int port) {
     int result = 0;
-
+    Verilated::traceEverOn(true);
     VerilatedVcdC* vfp;
     VerilatedContext* contextp;
     dut = new VTileForVerilator;
     vfp = new VerilatedVcdC;
     contextp = new VerilatedContext;
 #ifdef WAVE_TRACE
-    Verilated::traceEverOn(true);
     dut->trace(vfp, 99);
     vfp->open("sim.vcd");
     // dut->dump(0);

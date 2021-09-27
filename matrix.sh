@@ -6,7 +6,7 @@ NC='\033[0m' # No Color
 
 main() {
     make
-    for FILE in cases/common/*; do
+    for FILE in cases/benchmark/*; do
         elf=${FILE:6:-4}
 
         echo -e "Start testing on ${CYAN}${elf}${NC} !!!"
