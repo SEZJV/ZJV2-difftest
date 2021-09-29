@@ -33,44 +33,44 @@ void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
             regs->gpr[28], regs->gpr[29], regs->gpr[30], regs->gpr[31]);
 }
 
-bool inst_is_branch(Inst inst) {
-    if (0x2 <= inst.op && inst.op <= 0x7) return true;
-    if (0x14 <= inst.op && inst.op <= 0x17) return true;
+// bool inst_is_branch(inst_t inst) {
+//     if (0x2 <= inst.op && inst.op <= 0x7) return true;
+//     if (0x14 <= inst.op && inst.op <= 0x17) return true;
 
-    if (inst.op == 0x00) { // special table
-        if (inst.func == 0x08 || inst.func == 0x9) return true;
-        return false;
-    }
+//     if (inst.op == 0x00) { // special table
+//         if (inst.func == 0x08 || inst.func == 0x9) return true;
+//         return false;
+//     }
 
-    if (inst.op == 0x01) { // regimm table
-        if (0x00 <= inst.rt && inst.rt <= 0x03) return true;
-        if (0x10 <= inst.rt && inst.rt <= 0x13) return true;
-        return false;
-    }
+//     if (inst.op == 0x01) { // regimm table
+//         if (0x00 <= inst.rt && inst.rt <= 0x03) return true;
+//         if (0x10 <= inst.rt && inst.rt <= 0x13) return true;
+//         return false;
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
-bool inst_is_load_mmio(Inst inst, qemu_regs_t *regs) {
-    if (inst.op == 0x23) {
-        uint32_t addr = regs->gpr[inst.rs] + inst.simm;
-        return 0xA0000000 <= addr && addr < 0xC0000000;
-    }
-    return false;
-}
+// bool inst_is_load_mmio(inst_t inst, qemu_regs_t *regs) {
+//     if (inst.op == 0x23) {
+//         uint32_t addr = regs->gpr[inst.rs] + inst.simm;
+//         return 0xA0000000 <= addr && addr < 0xC0000000;
+//     }
+//     return false;
+// }
 
-bool inst_is_store_mmio(Inst inst, qemu_regs_t *regs) {
-    if (inst.op == 0x2b) {
-        uint32_t addr = regs->gpr[inst.rs] + inst.simm;
-        return 0xA0000000 <= addr && addr < 0xC0000000;
-    }
-    return false;
-}
+// bool inst_is_store_mmio(inst_t inst, qemu_regs_t *regs) {
+//     if (inst.op == 0x2b) {
+//         uint32_t addr = regs->gpr[inst.rs] + inst.simm;
+//         return 0xA0000000 <= addr && addr < 0xC0000000;
+//     }
+//     return false;
+// }
 
-bool inst_is_mmio(Inst inst, qemu_regs_t *regs) {
-    return inst_is_load_mmio(inst, regs) ||
-           inst_is_store_mmio(inst, regs);
-}
+// bool inst_is_mmio(inst_t inst, qemu_regs_t *regs) {
+//     return inst_is_load_mmio(inst, regs) ||
+//            inst_is_store_mmio(inst, regs);
+// }
 
 void difftest_start_qemu(const char *path, int use_sbi, int port, int ppid) {
     // install a parent death signal in the child
@@ -246,11 +246,11 @@ int difftest_body(const char *path, int port) {
         }
 
 
-        // if (bc > 2048 * 8) {
-            // break;
-        // }
         for (int i = 0; i < dut_commit(); i++) {
             qemu_single_step(conn);
+            qemu_getinst(conn, regs.pc);
+            qemu_getregs(conn, &regs);
+            sleep(1);
 
 #ifdef TRACE
             printf("\nQEMU\n");

@@ -49,42 +49,40 @@ qemu_conn_t *qemu_connect(int port) {
     return conn;
 }
 
-bool qemu_memcpy_to_qemu_small(
-        qemu_conn_t *conn, uint32_t dest, void *src, int len) {
-    char *buf = (char *) malloc(len * 2 + 128);
-    assert(buf != NULL);
-    int p = sprintf(buf, "M0x%x,%x:", dest, len);
-    int i;
-    for (i = 0; i < len; i++) {
-        p += sprintf(buf + p, "%c%c",
-                     hex_encode(((uint8_t *) src)[i] >> 4),
-                     hex_encode(((uint8_t *) src)[i] & 0xf));
-    }
+// bool qemu_memcpy_to_qemu_small(qemu_conn_t *conn, uint32_t dest, void *src, int len) {
+//     char *buf = (char *) malloc(len * 2 + 128);
+//     assert(buf != NULL);
+//     int p = sprintf(buf, "M0x%x,%x:", dest, len);
+//     int i;
+//     for (i = 0; i < len; i++) {
+//         p += sprintf(buf + p, "%c%c",
+//                      hex_encode(((uint8_t *) src)[i] >> 4),
+//                      hex_encode(((uint8_t *) src)[i] & 0xf));
+//     }
 
-    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
-    free(buf);
+//     gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+//     free(buf);
 
-    size_t size;
-    uint8_t *reply = gdb_recv(conn, &size);
-    bool ok = !strcmp((const char *) reply, "OK");
-    free(reply);
+//     size_t size;
+//     uint8_t *reply = gdb_recv(conn, &size);
+//     bool ok = !strcmp((const char *) reply, "OK");
+//     free(reply);
 
-    return ok;
-}
+//     return ok;
+// }
 
-bool qemu_memcpy_to_qemu(
-        qemu_conn_t *conn, uint32_t dest, void *src, int len) {
-    const int mtu = 1500;
-    bool ok = true;
-    while (len > mtu) {
-        ok &= qemu_memcpy_to_qemu_small(conn, dest, src, mtu);
-        dest += mtu;
-        src += mtu;
-        len -= mtu;
-    }
-    ok &= qemu_memcpy_to_qemu_small(conn, dest, src, len);
-    return ok;
-}
+// bool qemu_memcpy_to_qemu(qemu_conn_t *conn, uint32_t dest, void *src, int len) {
+//     const int mtu = 1500;
+//     bool ok = true;
+//     while (len > mtu) {
+//         ok &= qemu_memcpy_to_qemu_small(conn, dest, src, mtu);
+//         dest += mtu;
+//         src += mtu;
+//         len -= mtu;
+//     }
+//     ok &= qemu_memcpy_to_qemu_small(conn, dest, src, len);
+//     return ok;
+// }
 
 bool qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
     gdb_send(conn, (const uint8_t *) "g", 1);
@@ -172,4 +170,20 @@ void qemu_continue(qemu_conn_t *conn) {
 
 void qemu_disconnect(qemu_conn_t *conn) {
     gdb_end(conn);
+}
+
+inst_t qemu_getinst(qemu_conn_t *conn, uint32_t pc) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "m0x%x,4", pc);
+    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+
+    size_t size;
+    uint8_t *reply = gdb_recv(conn, &size);
+
+    reply[8] = '\0';
+    inst_t inst = gdb_decode_inst(reply);
+    printf("%x\n", inst.val);
+
+    free(reply);
+    return inst;
 }

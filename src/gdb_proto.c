@@ -44,8 +44,7 @@ struct gdb_conn {
 };
 
 
-static uint8_t
-hex_nibble(uint8_t hex) {
+static uint8_t hex_nibble(uint8_t hex) {
   return isdigit(hex) ? hex - '0' : tolower(hex) - 'a' + 10;
 }
 
@@ -69,6 +68,22 @@ uint64_t gdb_decode_hex_str(uint8_t *bytes) {
   }
   return value;
 }
+
+inst_t gdb_decode_inst(uint8_t *bytes) {
+  uint32_t value = 0;
+  uint32_t weight = 1;
+  while (isxdigit(bytes[0]) && isxdigit(bytes[1])) {
+    value += weight * gdb_decode_hex(bytes[0], bytes[1]);
+    bytes += 2;
+    weight *= 16 * 16;
+  }
+
+  inst_t inst;
+  inst.val = value;
+
+  return inst;
+}
+
 
 
 static struct gdb_conn* gdb_begin(int fd) {

@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "monitor.h"
 
 /* kernel-debug */
 extern void check_kernel_image(const char *image);

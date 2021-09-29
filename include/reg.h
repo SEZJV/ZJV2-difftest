@@ -392,65 +392,6 @@ enum {
   FPU_FMT_UD,
 };
 
-typedef struct {
-  union {
-    uint32_t val;
-    // R-type
-    struct {
-      uint32_t func : 6;
-      uint32_t shamt : 5;
-      uint32_t rd : 5;
-      uint32_t rt : 5;
-      uint32_t rs : 5;
-      uint32_t op : 6;
-    };
-
-    uint32_t uimm : 16; // I-type
-
-    int32_t simm : 16; // SI-type
-
-    uint32_t addr : 26; // J-type
-    uint32_t sel : 3;   // MFC0
-
-    // FPU
-    struct {
-      uint32_t : 6;
-      uint32_t fd : 5;
-      uint32_t fs : 5;
-      uint32_t ft : 5;
-      uint32_t fmt : 5;
-      uint32_t : 6;
-    };
-
-    struct {
-      uint32_t : 6;
-      uint32_t : 1;
-      uint32_t fd64 : 4;
-      uint32_t : 1;
-      uint32_t fs64 : 4;
-      uint32_t : 1;
-      uint32_t ft64 : 4;
-      uint32_t : 5;
-      uint32_t : 6;
-    };
-
-    struct {
-      uint32_t cond : 4; // bit 0..3
-      uint32_t fc : 2;   // bit 4..5
-      uint32_t A0 : 1;   // bit 6
-      uint32_t : 1;      // bit 7
-      uint32_t cc1 : 3;  // bit 8..10
-    };
-
-    struct {
-      uint32_t : 16;    // bit 0..15
-      uint32_t tf : 1;  // bit 16
-      uint32_t nd : 1;  // bit 17
-      uint32_t cc2 : 3; // bit 18..20
-      uint32_t bc : 5;  // bit 21..25
-    };
-  };
-} Inst; // Instruction
 
 extern CPU_state cpu;
 int init_cpu(uint64_t entry);

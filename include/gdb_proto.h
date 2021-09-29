@@ -17,12 +17,20 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef GDB_PROTO_H
+#define GDB_PROTO_H
+
 #include <stdint.h>
 #include <stddef.h>
+
+#include "isa.h"
 
 struct gdb_conn;
 
 uint16_t gdb_decode_hex(uint8_t msb, uint8_t lsb);
+
+inst_t gdb_decode_inst(uint8_t *bytes);
+
 uint64_t gdb_decode_hex_str(uint8_t *bytes);
 
 uint8_t hex_encode(uint8_t digit);
@@ -38,3 +46,5 @@ void gdb_send(struct gdb_conn *conn, const uint8_t *command, size_t size);
 uint8_t *gdb_recv(struct gdb_conn *conn, size_t *size);
 
 const char * gdb_start_noack(struct gdb_conn *conn);
+
+#endif
