@@ -7,8 +7,8 @@
 #include "verilated_vcd_c.h"
 
 #include "qemu.h"
-#include "reg.h"
 #include "dut.h"
+#include "isa.h"
 
 #define WAVE_TRACE
 
@@ -247,8 +247,11 @@ int difftest_body(const char *path, int port) {
 
 
         for (int i = 0; i < dut_commit(); i++) {
+            // get current instruction
+            inst_t inst = qemu_getinst(conn, regs.pc);
+            printf("[DEBUG] pc: %08x | inst: %08x | is_load: %d\n", regs.pc, inst.val, inst_is_load_uart(inst));
+
             qemu_single_step(conn);
-            qemu_getinst(conn, regs.pc);
             qemu_getregs(conn, &regs);
             sleep(1);
 

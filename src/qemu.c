@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include "qemu.h"
-#include "reg.h"
 
 /* only for debug, print the packets */
 #if 0
@@ -182,7 +181,6 @@ inst_t qemu_getinst(qemu_conn_t *conn, uint32_t pc) {
 
     reply[8] = '\0';
     inst_t inst = gdb_decode_inst(reply);
-    printf("%x\n", inst.val);
 
     free(reply);
     return inst;
