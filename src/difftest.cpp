@@ -249,11 +249,14 @@ int difftest_body(const char *path, int port) {
         for (int i = 0; i < dut_commit(); i++) {
             // get current instruction
             inst_t inst = qemu_getinst(conn, regs.pc);
-            printf("[DEBUG] pc: %08x | inst: %08x | is_load: %d\n", regs.pc, inst.val, inst_is_load_uart(inst));
+            if (inst_is_load(inst)) {
+                printf("[DEBUG] is load | pc: %08x | inst: %08x\n", regs.pc, inst.val);
+                inst_is_load_uart(inst, &regs);
+            }
 
             qemu_single_step(conn);
             qemu_getregs(conn, &regs);
-            sleep(1);
+            sleep(0.25);
 
 #ifdef TRACE
             printf("\nQEMU\n");
