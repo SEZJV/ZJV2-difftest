@@ -178,6 +178,16 @@ bool check_and_close_difftest(qemu_conn_t *conn, VerilatedVcdC* vfp, VerilatedCo
     return false;
 }
 
+// bool check_print_ysyx() {
+//     return dut->io_difftest_print;
+// }
+
+bool ysyx_skip_print(qemu_conn_t *conn, uint32_t pc) {
+    inst_t nop;
+    nop.val = 0x13;
+    return qemu_setinst(conn, pc, &nop);
+}
+
 int difftest_body(const char *path, int port) {
     int result = 0;
     Verilated::traceEverOn(true);
@@ -225,6 +235,24 @@ int difftest_body(const char *path, int port) {
     // printf("end\n");
     // return;
 
+    // 
+    inst_t nop;
+    nop.val = 0x13;
+    qemu_setinst(conn, 0x800004f8, &nop);
+    // qemu_setinst(conn, 0x8000535c, &nop);
+    // qemu_setinst(conn, 0x80005360, &nop);
+    qemu_setinst(conn, 0x80005394, &nop);
+
+    // inst_t a;
+    // a = qemu_getinst(conn, 0x800004f8);
+    // printf("0x800004f8: %08x\n", a.val);
+    // a = qemu_getinst(conn, 0x8000535c);
+    // printf("0x8000535c: %08x\n", a.val);
+    // a = qemu_getinst(conn, 0x80005360);
+    // printf("0x80005360: %08x\n", a.val);
+    // a = qemu_getinst(conn, 0x80005394);
+    // printf("0x80005394: %08x\n", a.val);
+
     while (1) {
         dut_step(1, vfp, contextp);
         if (check_and_close_difftest(conn, vfp, contextp)) return 0;
@@ -249,11 +277,16 @@ int difftest_body(const char *path, int port) {
         for (int i = 0; i < dut_commit(); i++) {
             // get current instruction
             inst_t inst = qemu_getinst(conn, regs.pc);
-            if (inst_is_load(inst)) {
-                printf("[DEBUG] is load | pc: %08x | inst: %08x\n", regs.pc, inst.val);
-                inst_is_load_uart(inst, &regs);
-            }
-
+           
+            // if (inst_is_load_uart(inst, &regs)) {
+            //     printf("[DEBUG] is load uart | pc: %08x | inst: %08x\n", regs.pc, inst.val);
+            //     for (int i = 0; i < 32; ++i) {
+            //         dut_sync_reg(i, regs.gpr[i], true);
+            //     }
+            // }
+            // if (inst_is_print(inst)) {
+            //     ysyx_skip_print(conn, regs.pc);
+            // }
             qemu_single_step(conn);
             qemu_getregs(conn, &regs);
             sleep(0.25);
@@ -278,6 +311,8 @@ int difftest_body(const char *path, int port) {
         if (!difftest_regs(&regs, &dut_regs, &dut_pcs)) {
             sleep(1);
             printf("\nQEMU\n");
+            // qemu_getmem(conn, 0x200bff8);
+            // qemu_getmem(conn, 0x2004000);
             print_qemu_registers(&regs, true);
             printf("\nDUT\n");
             for (int i = 0; i < 3; i++) {

@@ -56,6 +56,9 @@ void dut_sync_reg(int saddr, int svalue, bool sync) {
     dut->io_difftest_sync = sync;
     dut->io_difftest_sval = svalue;
     dut->io_difftest_saddr = saddr;
+    if (sync) {
+        printf("[SYNC] sval: %08lx | saddr: %08lx\n", dut->io_difftest_sval, dut->io_difftest_saddr);
+    }
 }
 
 void dut_getregs(qemu_regs_t *regs) {

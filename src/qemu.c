@@ -185,3 +185,83 @@ inst_t qemu_getinst(qemu_conn_t *conn, uint32_t pc) {
     free(reply);
     return inst;
 }
+
+bool qemu_setinst(qemu_conn_t *conn, uint32_t pc, inst_t *inst) {
+    int len = sizeof(inst_t);
+    char buf[2*4+128];
+
+    int p = snprintf(buf, sizeof(buf), "M%x,4:", pc); // 1+8+1+1+1 = 12
+
+    void *src = inst;
+    int i;
+    for (i = 0; i < len; i++) {
+        p += sprintf(buf + p, "%c%c",
+                     hex_encode(((uint8_t *) src)[i] >> 4),
+                     hex_encode(((uint8_t *) src)[i] & 0xf));
+    }
+    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+
+    size_t size;
+    uint8_t *reply = gdb_recv(conn, &size);
+    bool ok = !strcmp((const char *) reply, "OK");
+    free(reply);
+
+    return ok;
+}
+
+uint64_t qemu_getmem(qemu_conn_t *conn, uint32_t addr) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "m0x%x,4", addr);
+    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+
+    size_t size;
+    uint8_t *reply = gdb_recv(conn, &size);
+
+    reply[8] = '\0';
+    uint64_t content = gdb_decode_hex_str(reply);
+    printf("0x%x: %08lx\n", addr, content);
+
+    free(reply);
+    return content;
+}
+
+// can't work properly
+bool qemu_setcsr(qemu_conn_t *conn, int csr_num, uint64_t *data) {
+    int len = sizeof(uint64_t);
+    char buf[2*4+128];
+
+    int p = snprintf(buf, sizeof(buf), "P%x=", csr_num); // 1+8+1+1+1 = 12
+    printf("%s\n", buf);
+
+    void *src = data;
+    int i;
+    for (i = 0; i < len; i++) {
+        p += sprintf(buf + p, "%c%c",
+                     hex_encode(((uint8_t *) src)[i] >> 4),
+                     hex_encode(((uint8_t *) src)[i] & 0xf));
+    }
+    printf("%s\n", buf);
+
+    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+    // free(buf);
+
+    size_t size;
+    uint8_t *reply = gdb_recv(conn, &size);
+    bool ok = !strcmp((const char *) reply, "OK");
+    printf("%s\n", (const char *) reply);
+    assert(ok == true);
+    free(reply);
+
+    return ok;
+}
+// can't work properly
+void qemu_getcsr(qemu_conn_t *conn, int csr_num) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "p%x", csr_num);
+    printf("%s\n", buf);
+    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+    size_t size;
+    uint8_t *reply = gdb_recv(conn, &size);
+    printf("%x: %016lx\n", csr_num, gdb_decode_hex_str(reply));
+    free(reply);
+}
