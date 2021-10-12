@@ -211,6 +211,7 @@ int difftest_body(const char *path, int port) {
     static long bypass = 500000;
 
     qemu_conn_t *conn = qemu_connect(port);
+    qemu_init(conn);                        // sending qXfer commands
 
     extern uint64_t elf_entry;
     regs.pc = elf_entry;

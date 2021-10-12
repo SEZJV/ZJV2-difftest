@@ -62,38 +62,38 @@ void dut_sync_reg(int saddr, int svalue, bool sync) {
 }
 
 void dut_getregs(qemu_regs_t *regs) {
-    regs->gpr[ 0] = dut->io_difftest_regs_0;  // TODO
-    regs->gpr[ 1] = dut->io_difftest_regs_1;
-    regs->gpr[ 2] = dut->io_difftest_regs_2;
-    regs->gpr[ 3] = dut->io_difftest_regs_3;
-    regs->gpr[ 4] = dut->io_difftest_regs_4;
-    regs->gpr[ 5] = dut->io_difftest_regs_5;
-    regs->gpr[ 6] = dut->io_difftest_regs_6;
-    regs->gpr[ 7] = dut->io_difftest_regs_7;
-    regs->gpr[ 8] = dut->io_difftest_regs_8;
-    regs->gpr[ 9] = dut->io_difftest_regs_9;
-    regs->gpr[10] = dut->io_difftest_regs_10;
-    regs->gpr[11] = dut->io_difftest_regs_11;
-    regs->gpr[12] = dut->io_difftest_regs_12;
-    regs->gpr[13] = dut->io_difftest_regs_13;
-    regs->gpr[14] = dut->io_difftest_regs_14;
-    regs->gpr[15] = dut->io_difftest_regs_15;
-    regs->gpr[16] = dut->io_difftest_regs_16;
-    regs->gpr[17] = dut->io_difftest_regs_17;
-    regs->gpr[18] = dut->io_difftest_regs_18;
-    regs->gpr[19] = dut->io_difftest_regs_19;
-    regs->gpr[20] = dut->io_difftest_regs_20;
-    regs->gpr[21] = dut->io_difftest_regs_21;
-    regs->gpr[22] = dut->io_difftest_regs_22;
-    regs->gpr[23] = dut->io_difftest_regs_23;
-    regs->gpr[24] = dut->io_difftest_regs_24;
-    regs->gpr[25] = dut->io_difftest_regs_25;
-    regs->gpr[26] = dut->io_difftest_regs_26;
-    regs->gpr[27] = dut->io_difftest_regs_27;
-    regs->gpr[28] = dut->io_difftest_regs_28;
-    regs->gpr[29] = dut->io_difftest_regs_29;
-    regs->gpr[30] = dut->io_difftest_regs_30;
-    regs->gpr[31] = dut->io_difftest_regs_31;
+    regs->gpr[ 0] = dut->io_difftest_gprs_0;  // TODO
+    regs->gpr[ 1] = dut->io_difftest_gprs_1;
+    regs->gpr[ 2] = dut->io_difftest_gprs_2;
+    regs->gpr[ 3] = dut->io_difftest_gprs_3;
+    regs->gpr[ 4] = dut->io_difftest_gprs_4;
+    regs->gpr[ 5] = dut->io_difftest_gprs_5;
+    regs->gpr[ 6] = dut->io_difftest_gprs_6;
+    regs->gpr[ 7] = dut->io_difftest_gprs_7;
+    regs->gpr[ 8] = dut->io_difftest_gprs_8;
+    regs->gpr[ 9] = dut->io_difftest_gprs_9;
+    regs->gpr[10] = dut->io_difftest_gprs_10;
+    regs->gpr[11] = dut->io_difftest_gprs_11;
+    regs->gpr[12] = dut->io_difftest_gprs_12;
+    regs->gpr[13] = dut->io_difftest_gprs_13;
+    regs->gpr[14] = dut->io_difftest_gprs_14;
+    regs->gpr[15] = dut->io_difftest_gprs_15;
+    regs->gpr[16] = dut->io_difftest_gprs_16;
+    regs->gpr[17] = dut->io_difftest_gprs_17;
+    regs->gpr[18] = dut->io_difftest_gprs_18;
+    regs->gpr[19] = dut->io_difftest_gprs_19;
+    regs->gpr[20] = dut->io_difftest_gprs_20;
+    regs->gpr[21] = dut->io_difftest_gprs_21;
+    regs->gpr[22] = dut->io_difftest_gprs_22;
+    regs->gpr[23] = dut->io_difftest_gprs_23;
+    regs->gpr[24] = dut->io_difftest_gprs_24;
+    regs->gpr[25] = dut->io_difftest_gprs_25;
+    regs->gpr[26] = dut->io_difftest_gprs_26;
+    regs->gpr[27] = dut->io_difftest_gprs_27;
+    regs->gpr[28] = dut->io_difftest_gprs_28;
+    regs->gpr[29] = dut->io_difftest_gprs_29;
+    regs->gpr[30] = dut->io_difftest_gprs_30;
+    regs->gpr[31] = dut->io_difftest_gprs_31;
 }
 
 void dut_write_counter(int value) {

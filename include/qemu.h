@@ -39,4 +39,6 @@ void qemu_getcsr(qemu_conn_t *conn, int csr_num);
 
 bool qemu_setcsr(qemu_conn_t *conn, int csr_num, uint64_t *data);
 
+void qemu_init(qemu_conn_t *conn);
+
 #endif

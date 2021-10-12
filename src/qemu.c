@@ -24,6 +24,19 @@
   })
 #endif
 
+
+const char* init_cmds[] = {
+    "qXfer:features:read:target.xml:0,ffb",             // target.xml
+    "qXfer:features:read:riscv-64bit-cpu.xml:0,ffb",    // riscv-64bit-cpu.xml
+    "qXfer:features:read:riscv-64bit-fpu.xml:0,ffb",    // riscv-64bit-fpu.xml
+    "qXfer:features:read:riscv-64bit-fpu.xml:7fd,ffb",
+    "qXfer:features:read:riscv-64bit-virtual.xml:0,ffb",// riscv-64bit-virtual.xml
+    "qXfer:features:read:riscv-csr.xml:0,ffb",          // riscv-csr.xml
+    "qXfer:features:read:riscv-csr.xml:7fd,ffb",        
+    "qXfer:features:read:riscv-csr.xml:ffa,ffb",      
+    "qXfer:features:read:riscv-csr.xml:17f7,ffb"
+};
+
 int qemu_start(const char *elf, int use_sbi, int port) {
     char remote_s[100];
     const char *exec = "qemu-system-riscv64";
@@ -254,6 +267,7 @@ bool qemu_setcsr(qemu_conn_t *conn, int csr_num, uint64_t *data) {
 
     return ok;
 }
+
 // can't work properly
 void qemu_getcsr(qemu_conn_t *conn, int csr_num) {
     char buf[32];
@@ -264,4 +278,15 @@ void qemu_getcsr(qemu_conn_t *conn, int csr_num) {
     uint8_t *reply = gdb_recv(conn, &size);
     printf("%x: %016lx\n", csr_num, gdb_decode_hex_str(reply));
     free(reply);
+}
+
+void qemu_init(qemu_conn_t *conn) {
+    int init_cmds_count = sizeof(init_cmds) / sizeof(init_cmds[0]);
+    
+    for (int i =0; i < init_cmds_count; i++) {
+        gdb_send(conn, (const uint8_t *) init_cmds[i], strlen(init_cmds[i]));
+        size_t size;
+        uint8_t *reply = gdb_recv(conn, &size);
+        free(reply);
+    }
 }
