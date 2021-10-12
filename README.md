@@ -98,3 +98,8 @@ andi-riscv-tests
 and-riscv-tests
 ...
 ```
+
+## Documents
+
+- [编译 RISC-V 版本的 rt-thread](doc/rt-thread.md)
+- [RISC-V GDB 中读取 CSR](doc/gdb-csr.md)

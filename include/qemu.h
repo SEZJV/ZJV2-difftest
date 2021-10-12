@@ -17,7 +17,7 @@ void qemu_disconnect(qemu_conn_t *conn);
 
 // bool qemu_memcpy_to_qemu(qemu_conn_t *conn, uint32_t dest, void *src, int len);
 
-bool qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r);
+void qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r);
 
 bool qemu_setregs(qemu_conn_t *conn, qemu_regs_t *r);
 

@@ -4,6 +4,8 @@
 #include "common.h"
 
 // qemu registers
+const int regs_count = 32 + 1 + 20; // 32 GPRs, 1 PC & 20 CSRs
+
 typedef union {
     struct {
         uint64_t zero, ra, sp, gp, tp, t0, t1, t2, fp,
@@ -11,9 +13,13 @@ typedef union {
                 s2, s3, s4, s5, s6, s7, s8, s9, s10,
                 s11, t3, t4, t5, t6;
         uint64_t pc;
+        uint64_t mstatus, medeleg, mideleg, mie, mip,
+                mtvec, mscratch, mepc, mcause, mtval;
+        uint64_t sstatus, sedeleg, sideleg, sie, stvec, 
+                sscratch, sepc, scause, stval, sip;
     };
     struct {
-        uint64_t array[40];
+        uint64_t array[regs_count];
     };
     struct {
         uint64_t gpr[32];
@@ -53,8 +59,6 @@ typedef union {
     //     uint32_t funct3: 3;
     //     uint32_t imm5: 5;
     // } s_inst_t;
-
-    // TODO more type
 } inst_t; // Instruction
 
 #define UART_START 0x10000000

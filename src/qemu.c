@@ -96,15 +96,15 @@ qemu_conn_t *qemu_connect(int port) {
 //     return ok;
 // }
 
-bool qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
+void qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
+    // read GPRs
     gdb_send(conn, (const uint8_t *) "g", 1);
     size_t size;
     uint8_t *reply = gdb_recv(conn, &size);
 
-    int i;
     uint8_t *p = reply;
     uint8_t c;
-    for (i = 0; i < sizeof(qemu_regs_t) / sizeof(uint64_t); i++) {
+    for (int i = 0; i < 33; i++) {
         c = p[16];
         p[16] = '\0';
         r->array[i] = gdb_decode_hex_str(p);
@@ -113,20 +113,17 @@ bool qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
     }
 
     free(reply);
-
-    return true;
 }
 
 bool qemu_setregs(qemu_conn_t *conn, qemu_regs_t *r) {
-    int len = sizeof(qemu_regs_t);
+    int len = 33;
     char *buf = (char *) malloc(len * 2 + 128);
     assert(buf != NULL);
     buf[0] = 'G';
 
     void *src = r;
     int p = 1;
-    int i;
-    for (i = 0; i < len; i++) {
+    for (int i = 0; i < len; i++) {
         p += sprintf(buf + p, "%c%c",
                      hex_encode(((uint8_t *) src)[i] >> 4),
                      hex_encode(((uint8_t *) src)[i] & 0xf));

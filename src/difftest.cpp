@@ -33,44 +33,6 @@ void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
             regs->gpr[28], regs->gpr[29], regs->gpr[30], regs->gpr[31]);
 }
 
-// bool inst_is_branch(inst_t inst) {
-//     if (0x2 <= inst.op && inst.op <= 0x7) return true;
-//     if (0x14 <= inst.op && inst.op <= 0x17) return true;
-
-//     if (inst.op == 0x00) { // special table
-//         if (inst.func == 0x08 || inst.func == 0x9) return true;
-//         return false;
-//     }
-
-//     if (inst.op == 0x01) { // regimm table
-//         if (0x00 <= inst.rt && inst.rt <= 0x03) return true;
-//         if (0x10 <= inst.rt && inst.rt <= 0x13) return true;
-//         return false;
-//     }
-
-//     return false;
-// }
-
-// bool inst_is_load_mmio(inst_t inst, qemu_regs_t *regs) {
-//     if (inst.op == 0x23) {
-//         uint32_t addr = regs->gpr[inst.rs] + inst.simm;
-//         return 0xA0000000 <= addr && addr < 0xC0000000;
-//     }
-//     return false;
-// }
-
-// bool inst_is_store_mmio(inst_t inst, qemu_regs_t *regs) {
-//     if (inst.op == 0x2b) {
-//         uint32_t addr = regs->gpr[inst.rs] + inst.simm;
-//         return 0xA0000000 <= addr && addr < 0xC0000000;
-//     }
-//     return false;
-// }
-
-// bool inst_is_mmio(inst_t inst, qemu_regs_t *regs) {
-//     return inst_is_load_mmio(inst, regs) ||
-//            inst_is_store_mmio(inst, regs);
-// }
 
 void difftest_start_qemu(const char *path, int use_sbi, int port, int ppid) {
     // install a parent death signal in the child
@@ -84,67 +46,61 @@ void difftest_start_qemu(const char *path, int use_sbi, int port, int ppid) {
     qemu_start(path, use_sbi, port);    // start qemu in single-step mode and stub gdb
 }
 
-// #define DiffAssert(cond, fmt, ...)                        \
-//   do {                                                    \
-//     if (!(cond)) {                                        \
-//       nemu_epilogue();                                    \
-//       eprintf("nemu: %s:%d: %s: Assertion `%s' failed\n", \
-//           __FILE__, __LINE__, __func__, #cond);           \
-//       eprintf("\e[1;31mmessage: " fmt "\e[0m\n",          \
-//           ##__VA_ARGS__);                                 \
-//       difftest_finish_qemu(conn);                         \
-//     }                                                     \
-//   } while (0)
 
-void __attribute__((noinline))
-difftest_finish_qemu(qemu_conn_t *conn) {
-    for (int i = 0; i < 2; i++) {
-        qemu_regs_t regs = {0};
-        qemu_single_step(conn);
-        qemu_getregs(conn, &regs);
-        print_qemu_registers(&regs, true);
-    }
-    abort();
-}
-
-// bool in_sync_addr(diff_pcs *dut_pcs) {
-//     static const int alen = 2;
-//     static uint32_t mfc0_count_pcs[alen] = {0x800058ec, 0x80024b7c};
-//     for (int i = 0; i < alen; i++) {
-//         for (int j = 0; j < 3; j++) {
-//             if (dut_pcs->mycpu_pcs[j] == mfc0_count_pcs[i]) return true;
-//         }
+// void __attribute__((noinline))
+// difftest_finish_qemu(qemu_conn_t *conn) {
+//     for (int i = 0; i < 2; i++) {
+//         qemu_regs_t regs = {0};
+//         qemu_single_step(conn);
+//         qemu_getregs(conn, &regs, &csrs);
+//         print_qemu_registers(&regs, true);
 //     }
-//     return false;
+//     abort();
 // }
 
-bool difftest_regs(qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs) {
-    const char *alias[32] = {"zero", "ra", "sp", "gp",
-                             "tp", "t0", "t1", "t2",
-                             "fp", "s1", "a0", "a1",
-                             "a2", "a3", "a4", "a5",
-                             "a6", "a7", "s2", "s3",
-                             "s4", "s5", "s6", "s7",
-                             "s8", "s9", "s10", "s11",
-                             "t3", "t4", "t5", "t6"};
-    // if (regs->pc - 4 != dut_pcs->mycpu_pcs[0] && regs->pc - 4 != dut_pcs->mycpu_pcs[1] && regs->pc - 4 != dut_pcs->mycpu_pcs[2]) {
-    //   printf("  |  at DS [%x %x %x]", dut_pcs->mycpu_pcs[0], dut_pcs->mycpu_pcs[1], dut_pcs->mycpu_pcs[2]);
-    // }
-    static uint32_t last_3_qpcs[3] = {0};
+
+// 比较寄存器，包括 GPRs 和 CSRs
+bool difftest_regs (qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs) {
+    const char *alias[regs_count] = {
+        "zero", "ra", "sp", "gp",
+        "tp", "t0", "t1", "t2",
+        "fp", "s1", "a0", "a1",
+        "a2", "a3", "a4", "a5",
+        "a6", "a7", "s2", "s3",
+        "s4", "s5", "s6", "s7",
+        "s8", "s9", "s10", "s11",
+        "t3", "t4", "t5", "t6", "pc",
+        "mstatus", "medeleg", "mideleg", "mie", "mip",
+        "mtvec", "mscratch", "mepc", "mcause", "mtval",
+        "sstatus", "sedeleg", "sideleg", "sie", "stvec", 
+        "sscratch", "sepc", "scause", "stval", "sip"
+    };
+
+    static uint64_t last_3_qpcs[3] = {0};
     for (int i = 0; i < 32; i++) {
         if (regs->gpr[i] != dut_regs->gpr[i]) {
-            // if (in_sync_addr(dut_pcs)) {
-                // dut_sync_reg(i, regs->gpr[i], true);
-            // } else {
-                sleep(2);
-                for (int j = 0; j < 3; j++) {
-                    printf("QEMU PC at [0x%08x]\n", last_3_qpcs[j]);
-                }
-                printf("\x1B[31mError in $%s, QEMU %lx, ZJV2 %lx\x1B[37m\n", alias[i], regs->gpr[i], dut_regs->gpr[i]);
-                return false;
-            // }
+            sleep(0.5);
+            for (int j = 0; j < 3; j++) {
+                printf("QEMU PC at [0x%016lx]\n", last_3_qpcs[j]);
+            }
+            printf("\x1B[31mError in $%s, QEMU %lx, ZJV2 %lx\x1B[37m\n", 
+                alias[i], regs->gpr[i], dut_regs->gpr[i]);
+            return false;
         }
     }
+
+    for (int i = 33; i < regs_count; i++) {
+        if (regs->array[i] != dut_regs->array[i]) {
+            sleep(0.5);
+            for (int j = 0; j < 3; j++) {
+                printf("QEMU PC at [0x%016lx]\n", last_3_qpcs[j]);
+            }
+            printf("\x1B[31mError in $%s, QEMU %lx, ZJV2 %lx\x1B[37m\n", 
+                alias[i], regs->array[i], dut_regs->array[i]);
+            return false;
+        }
+    }
+
     last_3_qpcs[0] = last_3_qpcs[1];
     last_3_qpcs[1] = last_3_qpcs[2];
     last_3_qpcs[2] = regs->pc - 4;
@@ -203,15 +159,12 @@ int difftest_body(const char *path, int port) {
 #endif
     qemu_regs_t regs = {0};
     qemu_regs_t dut_regs = {0};
+
     diff_pcs dut_pcs = {0};
     int bubble_count = 0;
-    uint64_t duts = 0;
-
-    static int ugly_cnt = 0;
-    static long bypass = 500000;
 
     qemu_conn_t *conn = qemu_connect(port);
-    qemu_init(conn);                        // sending qXfer commands
+    qemu_init(conn);                            // 初始化 GDB，发送 qXfer 命令注册 features 
 
     extern uint64_t elf_entry;
     regs.pc = elf_entry;
