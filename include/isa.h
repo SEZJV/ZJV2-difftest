@@ -39,9 +39,9 @@ typedef union {
     struct{
         uint32_t opcode: 7;
         uint32_t rd: 5;
+        uint32_t funct3: 3;
         uint32_t rs1: 5;
         uint32_t imm: 12;
-        uint32_t funct3: 3;
     } i_inst_t;
 
     // S-type
@@ -57,10 +57,15 @@ typedef union {
     // TODO more type
 } inst_t; // Instruction
 
+#define UART_START 0x10000000
+#define UART_END   0x10000fff
 
+#define NREGS      32
 
 int inst_is_load(inst_t inst);
 
 int inst_is_load_uart(inst_t inst, qemu_regs_t *regs);
+
+int inst_is_print(inst_t inst);
 
 #endif
