@@ -35,7 +35,7 @@ bool qemu_setinst(qemu_conn_t *conn, uint32_t pc, inst_t *inst);
 
 uint64_t qemu_getmem(qemu_conn_t *conn, uint32_t addr);
 
-void qemu_getcsr(qemu_conn_t *conn, int csr_num);
+void qemu_getcsrs(qemu_conn_t *conn, qemu_regs_t *r);
 
 bool qemu_setcsr(qemu_conn_t *conn, int csr_num, uint64_t *data);
 

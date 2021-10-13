@@ -70,9 +70,9 @@ bool difftest_regs (qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs)
         "s4", "s5", "s6", "s7",
         "s8", "s9", "s10", "s11",
         "t3", "t4", "t5", "t6", "pc",
-        "mstatus", "medeleg", "mideleg", "mie", "mip",
-        "mtvec", "mscratch", "mepc", "mcause", "mtval",
-        "sstatus", "sedeleg", "sideleg", "sie", "stvec", 
+        "mstatus", "medeleg", "mideleg", "mie", 
+        "mip", "mtvec", "mscratch", "mepc", 
+        "mcause", "mtval", "sstatus", "sie", "stvec", 
         "sscratch", "sepc", "scause", "stval", "sip"
     };
 
@@ -206,6 +206,14 @@ int difftest_body(const char *path, int port) {
     // printf("0x80005360: %08x\n", a.val);
     // a = qemu_getinst(conn, 0x80005394);
     // printf("0x80005394: %08x\n", a.val);
+
+    // while(1) {
+    //     sleep(1);
+    //     qemu_getregs(conn, &regs);
+    //     print_qemu_registers(&regs, true);
+    //     qemu_single_step(conn);
+    //     printf("\n");
+    // }
 
     while (1) {
         dut_step(1, vfp, contextp);

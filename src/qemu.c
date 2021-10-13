@@ -27,10 +27,10 @@
 
 const char* init_cmds[] = {
     "qXfer:features:read:target.xml:0,ffb",             // target.xml
-    "qXfer:features:read:riscv-64bit-cpu.xml:0,ffb",    // riscv-64bit-cpu.xml
-    "qXfer:features:read:riscv-64bit-fpu.xml:0,ffb",    // riscv-64bit-fpu.xml
-    "qXfer:features:read:riscv-64bit-fpu.xml:7fd,ffb",
-    "qXfer:features:read:riscv-64bit-virtual.xml:0,ffb",// riscv-64bit-virtual.xml
+    // "qXfer:features:read:riscv-64bit-cpu.xml:0,ffb",    // riscv-64bit-cpu.xml
+    // "qXfer:features:read:riscv-64bit-fpu.xml:0,ffb",    // riscv-64bit-fpu.xml
+    // "qXfer:features:read:riscv-64bit-fpu.xml:7fd,ffb",
+    // "qXfer:features:read:riscv-64bit-virtual.xml:0,ffb",// riscv-64bit-virtual.xml
     "qXfer:features:read:riscv-csr.xml:0,ffb",          // riscv-csr.xml
     "qXfer:features:read:riscv-csr.xml:7fd,ffb",        
     "qXfer:features:read:riscv-csr.xml:ffa,ffb",      
@@ -102,6 +102,8 @@ void qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
     size_t size;
     uint8_t *reply = gdb_recv(conn, &size);
 
+    printf("[DEBUG] check reply\n%s\n", reply);
+
     uint8_t *p = reply;
     uint8_t c;
     for (int i = 0; i < 33; i++) {
@@ -113,6 +115,7 @@ void qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
     }
 
     free(reply);
+    qemu_getcsrs(conn, r);
 }
 
 bool qemu_setregs(qemu_conn_t *conn, qemu_regs_t *r) {
@@ -236,7 +239,7 @@ uint64_t qemu_getmem(qemu_conn_t *conn, uint32_t addr) {
 }
 
 // can't work properly
-bool qemu_setcsr(qemu_conn_t *conn, int csr_num, uint64_t *data) {
+bool qemu_setcsrs(qemu_conn_t *conn, int csr_num, uint64_t *data) {
     int len = sizeof(uint64_t);
     char buf[2*4+128];
 
@@ -265,16 +268,39 @@ bool qemu_setcsr(qemu_conn_t *conn, int csr_num, uint64_t *data) {
     return ok;
 }
 
-// can't work properly
-void qemu_getcsr(qemu_conn_t *conn, int csr_num) {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "p%x", csr_num);
-    printf("%s\n", buf);
-    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
-    size_t size;
-    uint8_t *reply = gdb_recv(conn, &size);
-    printf("%x: %016lx\n", csr_num, gdb_decode_hex_str(reply));
-    free(reply);
+void qemu_getcsrs(qemu_conn_t *conn, qemu_regs_t *r) {
+    const int csr_num_list[csrs_count] = {
+        0x346,  // mstatus
+        0x348,  // medeleg
+        0x349,  // mideleg
+        0x34a,  // mie
+        0x38a,  // mip
+        0x34b,  // mtvec
+        0x386,  // mscratch
+        0x387,  // mepc
+        0x388,  // mcause
+        0x389,  // mtval
+
+        0x146,  // sstatus
+        0x14a,  // sie
+        0x14b,  // stvec
+        0x186,  // scratch
+        0x187,  // sepc
+        0x188,  // scause
+        0x189,  // stval
+        0x18a,  // sip 
+    };
+
+    for (int i = 0; i < csrs_count; i++) {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "p%x", csr_num_list[i]);
+        gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+        size_t size;
+        uint8_t *reply = gdb_recv(conn, &size);
+
+        r->array[33 + i] = gdb_decode_hex_str(reply);
+        free(reply);
+    }   
 }
 
 void qemu_init(qemu_conn_t *conn) {

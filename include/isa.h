@@ -3,8 +3,12 @@
 
 #include "common.h"
 
-// qemu registers
-const int regs_count = 32 + 1 + 20; // 32 GPRs, 1 PC & 20 CSRs
+// registers
+// * 32 GPRs
+// * 1  PC
+// * 18 CSRs
+const int csrs_count = 18;
+const int regs_count = 32 + 1 + csrs_count;
 
 typedef union {
     struct {
@@ -15,7 +19,7 @@ typedef union {
         uint64_t pc;
         uint64_t mstatus, medeleg, mideleg, mie, mip,
                 mtvec, mscratch, mepc, mcause, mtval;
-        uint64_t sstatus, sedeleg, sideleg, sie, stvec, 
+        uint64_t sstatus, sie, stvec, 
                 sscratch, sepc, scause, stval, sip;
     };
     struct {
