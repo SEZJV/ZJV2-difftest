@@ -119,7 +119,7 @@ void qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
 }
 
 bool qemu_setregs(qemu_conn_t *conn, qemu_regs_t *r) {
-    int len = 33;
+    int len = sizeof(qemu_regs_t);
     char *buf = (char *) malloc(len * 2 + 128);
     assert(buf != NULL);
     buf[0] = 'G';

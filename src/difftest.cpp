@@ -11,6 +11,7 @@
 #include "isa.h"
 
 #define WAVE_TRACE
+// #define QEMU_ONLY
 
 // dump qemu registers
 void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
@@ -206,14 +207,15 @@ int difftest_body(const char *path, int port) {
     // printf("0x80005360: %08x\n", a.val);
     // a = qemu_getinst(conn, 0x80005394);
     // printf("0x80005394: %08x\n", a.val);
-
-    // while(1) {
-    //     sleep(1);
-    //     qemu_getregs(conn, &regs);
-    //     print_qemu_registers(&regs, true);
-    //     qemu_single_step(conn);
-    //     printf("\n");
-    // }
+#ifdef QEMU_ONLY
+    while(1) {
+        sleep(1);
+        qemu_getregs(conn, &regs);
+        print_qemu_registers(&regs, true);
+        qemu_single_step(conn);
+        printf("\n");
+    }
+#endif
 
     while (1) {
         dut_step(1, vfp, contextp);
