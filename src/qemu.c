@@ -102,7 +102,7 @@ void qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
     size_t size;
     uint8_t *reply = gdb_recv(conn, &size);
 
-    printf("[DEBUG] check reply\n%s\n", reply);
+    // printf("[DEBUG] check reply\n%s\n", reply);
 
     uint8_t *p = reply;
     uint8_t c;
