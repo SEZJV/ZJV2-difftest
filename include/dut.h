@@ -11,7 +11,7 @@ typedef struct {
 } diff_pcs;
 
 
-#define TRACE
+// #define TRACE
 
 extern VTileForVerilator *dut;
 

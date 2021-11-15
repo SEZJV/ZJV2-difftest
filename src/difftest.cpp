@@ -10,7 +10,7 @@
 #include "dut.h"
 #include "isa.h"
 
-#define WAVE_TRACE
+// #define WAVE_TRACE
 // #define QEMU_ONLY
 
 // dump qemu registers
@@ -90,7 +90,9 @@ bool difftest_regs (qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs)
         }
     }
 
-    for (int i = 33; i < regs_count; i++) {
+    // for (int i = 33; i < regs_count; i++) {
+    // skip mstatus
+    for (int i = 34; i < regs_count; i++) {
         if (regs->array[i] != dut_regs->array[i]) {
             sleep(0.5);
             for (int j = 0; j < 3; j++) {
@@ -191,12 +193,12 @@ int difftest_body(const char *path, int port) {
     // return;
 
     // 
-    inst_t nop;
-    nop.val = 0x13;
-    qemu_setinst(conn, 0x800004f8, &nop);
-    // qemu_setinst(conn, 0x8000535c, &nop);
-    // qemu_setinst(conn, 0x80005360, &nop);
-    qemu_setinst(conn, 0x80005394, &nop);
+    // inst_t nop;
+    // nop.val = 0x13;
+    // qemu_setinst(conn, 0x800004f8, &nop);
+    // // qemu_setinst(conn, 0x8000535c, &nop);
+    // // qemu_setinst(conn, 0x80005360, &nop);
+    // qemu_setinst(conn, 0x80005394, &nop);
 
     // inst_t a;
     // a = qemu_getinst(conn, 0x800004f8);

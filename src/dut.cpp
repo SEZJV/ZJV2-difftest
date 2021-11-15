@@ -94,6 +94,24 @@ void dut_getregs(qemu_regs_t *regs) {
     regs->gpr[29] = dut->io_difftest_gprs_29;
     regs->gpr[30] = dut->io_difftest_gprs_30;
     regs->gpr[31] = dut->io_difftest_gprs_31;
+    // m mode CSR
+    // regs->array[33] = dut->io_difftest_csrs_mstatus;
+    regs->array[34] = dut->io_difftest_csrs_medeleg;
+    regs->array[35] = dut->io_difftest_csrs_mideleg;
+    regs->array[36] = dut->io_difftest_csrs_mie;
+    regs->array[37] = dut->io_difftest_csrs_mip;
+    regs->array[38] = dut->io_difftest_csrs_mtvec;
+    regs->array[39] = dut->io_difftest_csrs_mscratch;
+    regs->array[40] = dut->io_difftest_csrs_mepc;
+    regs->array[41] = dut->io_difftest_csrs_mcause;
+    regs->array[42] = dut->io_difftest_csrs_mtval;
+    // s mode CSR
+    regs->array[43] = dut->io_difftest_csrs_sstatus;
+    regs->array[45] = dut->io_difftest_csrs_stvec;
+    regs->array[46] = dut->io_difftest_csrs_sscratch;
+    regs->array[47] = dut->io_difftest_csrs_sepc;
+    regs->array[48] = dut->io_difftest_csrs_scause;
+    regs->array[49] = dut->io_difftest_csrs_stval;
 }
 
 void dut_write_counter(int value) {
