@@ -41,7 +41,7 @@ $(TARGET_DIR)/emulator: $(SRC)
 prepare:
 	echo "Preparing ..."
 	mkdir -p build
-	cp -v $(CASES_DIR)/$(ELF).elf $(TARGET_DIR)/testfile.elf
+	cp -v $(CASES_DIR)/$(ELF) $(TARGET_DIR)/testfile.elf
 	$(CROSS_COMPILE)objdump -d $(TARGET_DIR)/testfile.elf > $(TARGET_DIR)/testfile.dump
 	$(CROSS_COMPILE)objcopy -O binary $(TARGET_DIR)/testfile.elf $(TARGET_DIR)/testfile.bin
 	$(CROSS_COMPILE)objdump -d $(TARGET_DIR)/testfile.elf > $(TARGET_DIR)/testfile.dump
