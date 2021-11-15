@@ -32,6 +32,16 @@ void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
             regs->gpr[24], regs->gpr[25], regs->gpr[26], regs->gpr[27]);
     eprintf("$t3:  0x%016lx  $t4:0x%016lx  $t5: 0x%016lx  $t6: 0x%016lx\n",
             regs->gpr[28], regs->gpr[29], regs->gpr[30], regs->gpr[31]);
+    eprintf("$mstatus: 0x%016lx  $medeleg: 0x%016lx  $mideleg: 0x%016lx\n",
+            regs->array[33], regs->array[34], regs->array[35]);
+    eprintf("$mie:     0x%016lx  $mip:     0x%016lx  $mtvec:   0x%016lx  $mscratch: 0x%016lx\n",
+            regs->array[36], regs->array[37], regs->array[38], regs->array[39]);
+    eprintf("$mepc:    0x%016lx  $mcause:  0x%016lx  $mtval:   0x%016lx\n",
+            regs->array[40], regs->array[41], regs->array[42]);
+    eprintf("$sstatus: 0x%016lx  $sie:     0x%016lx  $stvec:   0x%016lx  $sscratch: 0x%016lx\n",
+            regs->array[43], regs->array[44], regs->array[45], regs->array[46]);
+    eprintf("$sepc:    0x%016lx  $scause:  0x%016lx  $stval:   0x%016lx  $sip:      0x%016lx\n",
+            regs->array[47], regs->array[48], regs->array[49], regs->array[50]);
 }
 
 
