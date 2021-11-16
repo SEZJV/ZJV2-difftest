@@ -95,7 +95,7 @@ void dut_getregs(qemu_regs_t *regs) {
     regs->gpr[30] = dut->io_difftest_gprs_30;
     regs->gpr[31] = dut->io_difftest_gprs_31;
     // m mode CSR
-    // regs->array[33] = dut->io_difftest_csrs_mstatus;
+    regs->array[33] = dut->io_difftest_csrs_mstatus;
     regs->array[34] = dut->io_difftest_csrs_medeleg;
     regs->array[35] = dut->io_difftest_csrs_mideleg;
     regs->array[36] = dut->io_difftest_csrs_mie;
