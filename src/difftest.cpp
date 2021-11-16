@@ -100,9 +100,8 @@ bool difftest_regs (qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs)
         }
     }
 
-    // for (int i = 33; i < regs_count; i++) {
-    // skip mstatus
-    for (int i = 34; i < regs_count; i++) {
+    // diff CSRs
+    for (int i = 33; i < regs_count; i++) {
         if (regs->array[i] != dut_regs->array[i]) {
             sleep(0.5);
             for (int j = 0; j < 3; j++) {
