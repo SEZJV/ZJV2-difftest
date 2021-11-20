@@ -5,6 +5,9 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 main() {
+    # difftest return code
+    dt_ret_code=0
+    
     make -j
     # for FILE in cases/benchmark/*; do
     for FILE in cases/riscv-tests/*; do
@@ -18,11 +21,12 @@ main() {
         
         ret_code=$?
         if [ $ret_code != 0 ]; then
-            exit $ret_code
+            dt_ret_code=1
         fi    
         
         popd
     done 
+    return $dt_ret_code
 }
 
 main
