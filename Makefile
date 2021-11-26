@@ -39,7 +39,6 @@ $(TARGET_DIR)/emulator: $(SRC)
 	$(MAKE) -C $(VERILATOR_DEST_DIR)/build -f $(VERILATOR_DEST_DIR)/build/VTileForVerilator.mk
 
 prepare:
-	echo "Preparing ..."
 	mkdir -p build
 	cp -v $(CASES_DIR)/$(ELF) $(TARGET_DIR)/testfile.elf
 	$(CROSS_COMPILE)objdump -d $(TARGET_DIR)/testfile.elf > $(TARGET_DIR)/testfile.dump

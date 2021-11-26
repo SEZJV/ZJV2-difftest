@@ -259,7 +259,7 @@ int difftest_body(const char *path, int port) {
             bubble_count++;
             // printf("dut bubble count: %d\n", bubble_count);
 
-            if (bubble_count > 50) {
+            if (bubble_count > 200) {
                 printf("Too many bubbles.\n");
                 break;
             }
