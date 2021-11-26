@@ -10,7 +10,10 @@
 #include "dut.h"
 #include "isa.h"
 
-// #define WAVE_TRACE
+int total_instructions;
+
+#define WAVE_TRACE
+// #define IPC_TRACE
 // #define QEMU_ONLY
 
 // dump qemu registers
@@ -135,6 +138,18 @@ bool check_end_ysyx() {
 bool check_and_close_difftest(qemu_conn_t *conn, VerilatedVcdC* vfp, VerilatedContext* context) {
     if (check_end_ysyx()) {
         printf("difftest pass!\n");
+
+#ifdef IPC_TRACE
+        // print information
+        printf("Total Instructions: %d\n", total_instructions);
+        printf("Total Cycles: %lld\n", dut->io_difftest_counter);
+        printf("IPC: %lf\n", double(total_instructions) / dut->io_difftest_counter);
+        printf("Both Cache Stall Cycles: %lld\n", dut->io_difftest_common);
+        printf("\tDcache Stall Cycles: %lld\n", dut->io_difftest_dstall);
+        printf("\tIcache Stall Cycles: %lld\n", dut->io_difftest_istall);
+        printf("MDU Stall Cycles: %lld\n", dut->io_difftest_mduStall);
+#endif
+
 #ifdef WAVE_TRACE
         dut_step(100, vfp, context);
         vfp->close();
@@ -231,13 +246,14 @@ int difftest_body(const char *path, int port) {
 
     while (1) {
         dut_step(1, vfp, contextp);
-        if (check_and_close_difftest(conn, vfp, contextp)) return 0;
+        if (check_and_close_difftest(conn, vfp, contextp))
+            return 0;
         bubble_count = 0;
         dut_sync_reg(0, 0, false);
 
         while (dut_commit() == 0) {
             dut_step(1, vfp, contextp);
-            if (check_and_close_difftest(conn, vfp, contextp)) 
+            if (check_and_close_difftest(conn, vfp, contextp))
                 return 0;
 
             bubble_count++;
@@ -249,7 +265,7 @@ int difftest_body(const char *path, int port) {
             }
         }
 
-
+        total_instructions += dut_commit();
         for (int i = 0; i < dut_commit(); i++) {
             // get current instruction
             inst_t inst = qemu_getinst(conn, regs.pc);

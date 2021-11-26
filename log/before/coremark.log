@@ -1,0 +1,20 @@
+reg conflict: 24
+inst-ID pc: 80001a08
+
+reg conflict:  1
+inst-ID pc: 80002448
+
+reg conflict: 16
+inst-ID pc: 800024c8
+
+reg conflict:  8
+inst-ID pc: 800024d4
+
+reg conflict: 10
+inst-ID pc: 800024e8
+
+reg conflict: 10
+inst-ID pc: 80002504
+
+reg conflict: 10
+inst-ID pc: 80002520
