@@ -5,62 +5,11 @@ ZJV2's difftest framework based on Verilator, QEMU and GDB.
 
 ## Requirement
 
-### riscv-gnu-toolchain
+- riscv-gnu-toolchain
+- qemu-system-riscv64
+- verilator
 
-`riscv-gnu-toolchain` has official release now!
-
-```bash
-$ wget https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2021.09.21/riscv64-elf-ubuntu-20.04-nightly-2021.09.21-nightly.tar.gz
-$ tar -zxvf riscv64-elf-ubuntu-20.04-nightly-2021.09.21-nightly.tar.gz
-$ sudo mv riscv /tools/riscv-elf
-```
-
-
-### verilator
-
-Get the source code.
-
-```bash
-$ wget https://github.com/verilator/verilator/archive/refs/tags/v4.210.tar.gz
-$ tar -zxvf v4.210.tar.gz
-```
-
-Configure and build
-
-```bash
-$ cd verilator-4.210
-$ unset VERILATOR_ROOT
-$ autoconf
-$ ./configure
-$ make -j8
-$ sudo make install
-```
-
-
-### qemu-system-riscv64
-
-Install dependencies.
-
-```bash
-$ sudo apt install wget ninja-build libglib2.0-dev libpixman-1-dev pkg-config
-```
-
-Get the source code.
-
-```bash
-$ wget https://download.qemu.org/qemu-6.1.0.tar.xz
-$ tar xvJf qemu-6.1.0.tar.xz
-```
-
-Configure and build
-
-```bash
-$ cd qemu-6.1.0
-$ ./configure --target-list=riscv64-softmmu
-$ make -j
-$ sudo make install
-```
-
+**NOTICE**: if you need a dockerized environment with all above tools, check [zjv2-env](https://github.com/riscv-zju/zjv2-env)
 
 ## Usage
 
