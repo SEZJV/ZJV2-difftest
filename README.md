@@ -13,7 +13,6 @@ ZJV2's difftest framework based on Verilator, QEMU and GDB.
 
 ## Usage
 
-`ZJV2-difftest` has been imported as a Git submodule of `ZJV2`. All the stuff regarding difftest can be fetched from `ZJV2` repo.
 
 The following is a simple use case:
 
