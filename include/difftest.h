@@ -5,6 +5,6 @@
 #ifndef ZJV2_DIFFTEST_DIFFTEST_H
 #define ZJV2_DIFFTEST_DIFFTEST_H
 
-int difftest(const char *path, int use_sbi);
+int difftest(const char *path);
 
 #endif //ZJV2_DIFFTEST_DIFFTEST_H
