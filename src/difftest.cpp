@@ -47,7 +47,7 @@ void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
 }
 
 
-void difftest_start_qemu(const char *path, int use_sbi, int port, int ppid) {
+void difftest_start_qemu(const char *path, int port, int ppid) {
     // install a parent death signal in the child
     int r = prctl(PR_SET_PDEATHSIG, SIGTERM);
     if (r == -1) { panic("prctl error"); }
@@ -56,7 +56,7 @@ void difftest_start_qemu(const char *path, int use_sbi, int port, int ppid) {
 
     close(0); // close STDIN
 
-    qemu_start(path, use_sbi, port);    // start qemu in single-step mode and stub gdb
+    qemu_start(path, port);    // start qemu in single-step mode and stub gdb
 }
 
 
@@ -319,7 +319,7 @@ int difftest_body(const char *path, int port) {
     return result;
 }
 
-int difftest(const char *path, int use_sbi) {
+int difftest(const char *path) {
     int port = 1234;
     int ppid = getpid();
     int result = 0;
@@ -329,7 +329,7 @@ int difftest(const char *path, int use_sbi) {
     if (fork() != 0) {    // child process
         result = difftest_body(path, port);
     } else {              // parent process
-        difftest_start_qemu(path, use_sbi, port, ppid);
+        difftest_start_qemu(path, port, ppid);
     }
 
     return result;

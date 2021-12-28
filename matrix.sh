@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
@@ -17,7 +16,7 @@ main() {
 
         make prepare ELF=/$elf
         pushd build
-        ./emulator -elf
+        ./emulator
         
         ret_code=$?
         if [ $ret_code != 0 ]; then

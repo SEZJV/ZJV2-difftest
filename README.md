@@ -20,7 +20,7 @@ The following is a simple use case:
 $ cd ZJV2-difftest
 $ make prepare ELF=riscv-tests/rv64um-p-div
 $ make
-$ cd build && ./emulator -elf
+$ cd build && ./emulator
 ```
 
 
