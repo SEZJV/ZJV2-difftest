@@ -34,16 +34,32 @@ void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
             regs->gpr[24], regs->gpr[25], regs->gpr[26], regs->gpr[27]);
     eprintf("$t3:  0x%016lx  $t4:0x%016lx  $t5: 0x%016lx  $t6: 0x%016lx\n",
             regs->gpr[28], regs->gpr[29], regs->gpr[30], regs->gpr[31]);
+    eprintf("$ft0:  0x%016lx  $ft1:0x%016lx  $ft2: 0x%016lx  $ft3: 0x%016lx\n",
+        regs->fpr[33], regs->fpr[34], regs->fpr[35], regs->fpr[36]);
+    eprintf("$ft4:  0x%016lx  $ft5:0x%016lx  $ft6: 0x%016lx  $ft7: 0x%016lx\n",
+        regs->fpr[37], regs->fpr[38], regs->fpr[39], regs->fpr[40]);
+    eprintf("$fs0:  0x%016lx  $fs1:0x%016lx  $fa0: 0x%016lx  $fa1: 0x%016lx\n",
+        regs->fpr[41], regs->fpr[42], regs->fpr[43], regs->fpr[44]);
+    eprintf("$fa2:  0x%016lx  $fa3:0x%016lx  $fa4: 0x%016lx  $fa5: 0x%016lx\n",
+        regs->fpr[45], regs->fpr[46], regs->fpr[47], regs->fpr[48]);
+    eprintf("$fa6:  0x%016lx  $fa7:0x%016lx  $fs2: 0x%016lx  $fs3: 0x%016lx\n",
+        regs->fpr[49], regs->fpr[50], regs->fpr[51], regs->fpr[52]);
+    eprintf("$fs4:  0x%016lx  $fs5:0x%016lx  $fs6: 0x%016lx  $fs7: 0x%016lx\n",
+        regs->fpr[53], regs->fpr[54], regs->fpr[55], regs->fpr[56]);
+    eprintf("$fs8:  0x%016lx  $fs9:0x%016lx  $fs10: 0x%016lx  $fs11: 0x%016lx\n",
+        regs->fpr[57], regs->fpr[58], regs->fpr[59], regs->fpr[60]);
+    eprintf("$ft8:  0x%016lx  $ft9:0x%016lx  $ft10: 0x%016lx  $ft11: 0x%016lx\n",
+        regs->fpr[61], regs->fpr[62], regs->fpr[63], regs->fpr[64]);
     eprintf("$mstatus: 0x%016lx  $medeleg: 0x%016lx  $mideleg: 0x%016lx\n",
-            regs->array[33], regs->array[34], regs->array[35]);
+            regs->array[65], regs->array[66], regs->array[67]);
     eprintf("$mie:     0x%016lx  $mip:     0x%016lx  $mtvec:   0x%016lx  $mscratch: 0x%016lx\n",
-            regs->array[36], regs->array[37], regs->array[38], regs->array[39]);
+            regs->array[68], regs->array[69], regs->array[70], regs->array[71]);
     eprintf("$mepc:    0x%016lx  $mcause:  0x%016lx  $mtval:   0x%016lx\n",
-            regs->array[40], regs->array[41], regs->array[42]);
+            regs->array[72], regs->array[73], regs->array[74]);
     eprintf("$sstatus: 0x%016lx  $sie:     0x%016lx  $stvec:   0x%016lx  $sscratch: 0x%016lx\n",
-            regs->array[43], regs->array[44], regs->array[45], regs->array[46]);
+            regs->array[75], regs->array[76], regs->array[77], regs->array[78]);
     eprintf("$sepc:    0x%016lx  $scause:  0x%016lx  $stval:   0x%016lx  $sip:      0x%016lx\n",
-            regs->array[47], regs->array[48], regs->array[49], regs->array[50]);
+            regs->array[79], regs->array[80], regs->array[81], regs->array[82]);
 }
 
 
@@ -83,6 +99,10 @@ bool difftest_regs (qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs)
         "s4", "s5", "s6", "s7",
         "s8", "s9", "s10", "s11",
         "t3", "t4", "t5", "t6", "pc",
+        "ft0", "ft1", "ft2", "ft3", "ft4", "ft5", "ft6", "ft7",
+        "fs0", "fs1", "fa0", "fa1", "fa2", "fa3", "fa4", "fa5",
+        "fa6", "fa7", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7",
+        "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11",
         "mstatus", "medeleg", "mideleg", "mie", 
         "mip", "mtvec", "mscratch", "mepc", 
         "mcause", "mtval", "sstatus", "sie", "stvec", 
@@ -91,6 +111,7 @@ bool difftest_regs (qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs)
 
     static uint64_t last_3_qpcs[3] = {0};
     for (int i = 0; i < 32; i++) {
+        // GPR
         if (regs->gpr[i] != dut_regs->gpr[i]) {
             sleep(0.5);
             for (int j = 0; j < 3; j++) {
@@ -100,10 +121,21 @@ bool difftest_regs (qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs)
                 alias[i], regs->gpr[i], dut_regs->gpr[i]);
             return false;
         }
+        // FPR
+        if (regs->fpr[i + 33] != dut_regs->fpr[i + 33]) {
+            sleep(0.5);
+            for (int j = 0; j < 3; j++) {
+                printf("QEMU PC at [0x%016lx]\n", last_3_qpcs[j]);
+            }
+            printf("\x1B[31mError in $%s, QEMU %lx, ZJV2 %lx\x1B[37m\n", 
+                alias[33 + i], regs->fpr[i + 33], dut_regs->fpr[i + 33]);
+            return false;
+        }
     }
 
-    for (int i = 33; i < regs_count; i++) {
-        if (i == 33 || i == 43) { continue; }   // skip `mstatus` and `sstatus`
+    // CSR
+    for (int i = 65; i < regs_count; i++) {
+        if (i == 65 || i == 75) { continue; }   // skip `mstatus` and `sstatus`
         if (regs->array[i] != dut_regs->array[i]) {
             sleep(0.5);
             for (int j = 0; j < 3; j++) {

@@ -5,10 +5,11 @@
 
 // registers
 // * 32 GPRs
+// * 32 FPRs
 // * 1  PC
 // * 18 CSRs
 const int csrs_count = 18;
-const int regs_count = 32 + 1 + csrs_count;
+const int regs_count = 32 + 32 + 1 + csrs_count;
 
 typedef union {
     struct {
@@ -17,6 +18,10 @@ typedef union {
                 s2, s3, s4, s5, s6, s7, s8, s9, s10,
                 s11, t3, t4, t5, t6;
         uint64_t pc;
+        uint64_t ft0, ft1, ft2, ft3, ft4, ft5, ft6, ft7,
+                fs0, fs1, fa0, fa1, fa2, fa3, fa4, fa5,
+                fa6, fa7, fs2, fs3, fs4, fs5, fs6, fs7,
+                fs8, fs9, fs10, fs11, ft8, ft9, ft10, ft11;
         uint64_t mstatus, medeleg, mideleg, mie, mip,
                 mtvec, mscratch, mepc, mcause, mtval;
         uint64_t sstatus, sie, stvec, 
@@ -27,6 +32,9 @@ typedef union {
     };
     struct {
         uint64_t gpr[32];
+    };
+    struct {
+        uint64_t fpr[65];
     };
 } qemu_regs_t;
 

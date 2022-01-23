@@ -9,7 +9,7 @@ main() {
     
     make -j
 
-    for FILE in cases/benchmark-new/*; do
+    for FILE in cases/riscv-tests/*; do
         elf=${FILE:6}
 
         echo -e "Start testing on ${CYAN}${elf}${NC} !!!"

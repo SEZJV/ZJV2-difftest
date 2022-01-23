@@ -28,8 +28,8 @@
 const char* init_cmds[] = {
     "qXfer:features:read:target.xml:0,ffb",             // target.xml
     // "qXfer:features:read:riscv-64bit-cpu.xml:0,ffb",    // riscv-64bit-cpu.xml
-    // "qXfer:features:read:riscv-64bit-fpu.xml:0,ffb",    // riscv-64bit-fpu.xml
-    // "qXfer:features:read:riscv-64bit-fpu.xml:7fd,ffb",
+    "qXfer:features:read:riscv-64bit-fpu.xml:0,ffb",    // riscv-64bit-fpu.xml
+    "qXfer:features:read:riscv-64bit-fpu.xml:7fd,ffb",
     // "qXfer:features:read:riscv-64bit-virtual.xml:0,ffb",// riscv-64bit-virtual.xml
     "qXfer:features:read:riscv-csr.xml:0,ffb",          // riscv-csr.xml
     "qXfer:features:read:riscv-csr.xml:7fd,ffb",        
@@ -111,6 +111,7 @@ void qemu_getregs(qemu_conn_t *conn, qemu_regs_t *r) {
     }
 
     free(reply);
+    qemu_getfprs(conn, r);
     qemu_getcsrs(conn, r);
 }
 
@@ -294,7 +295,25 @@ void qemu_getcsrs(qemu_conn_t *conn, qemu_regs_t *r) {
         size_t size;
         uint8_t *reply = gdb_recv(conn, &size);
 
+        r->array[65 + i] = gdb_decode_hex_str(reply);
+        free(reply);
+    }   
+}
+
+void qemu_getfprs(qemu_conn_t *conn, qemu_regs_t *r) {
+    const int fpu_base = 33;
+
+    for (int i = 0; i < 32; i++) {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "p%x", (fpu_base + i));
+        gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+        size_t size;
+        uint8_t *reply = gdb_recv(conn, &size);
+
         r->array[33 + i] = gdb_decode_hex_str(reply);
+        // if (i == 1) {
+        //     printf("[DEBUG] ft1 = %lx\n", r->array[33 + i]);
+        // }
         free(reply);
     }   
 }
