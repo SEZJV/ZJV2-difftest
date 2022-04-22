@@ -37,10 +37,16 @@ uint64_t qemu_getmem(qemu_conn_t *conn, uint32_t addr);
 
 void qemu_getcsrs(qemu_conn_t *conn, qemu_regs_t *r);
 
+void qemu_get_csr(qemu_conn_t *conn, int csr_num, uint64_t *csr_data);
+
 void qemu_getfprs(qemu_conn_t *conn, qemu_regs_t *r);
 
-bool qemu_setcsr(qemu_conn_t *conn, int csr_num, uint64_t *data);
+bool qemu_set_csr(qemu_conn_t *conn, int csr_num, uint64_t *data);
 
 void qemu_init(qemu_conn_t *conn);
+
+void qemu_disable_int(qemu_conn_t *conn);
+
+void qemu_enable_int(qemu_conn_t *conn);
 
 #endif

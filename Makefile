@@ -31,7 +31,7 @@ CASES_DIR	:= $(CURDIR)/cases
 
 all: $(TARGET_DIR)/emulator
 
-$(TARGET_DIR)/emulator: $(SRC)
+$(TARGET_DIR)/emulator: $(SRC) $(VERILATOR_VSRC_DIR)/TileForVerilator.v
 	mkdir -p build
 	cp -v $(VERILATOR_VSRC_DIR)/TileForVerilator.v $(TARGET_DIR)/TileForVerilator.v
 	mkdir -p $(VERILATOR_DEST_DIR)
