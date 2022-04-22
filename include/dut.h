@@ -10,6 +10,9 @@ typedef struct {
     uint64_t mycpu_pcs[3];
 } diff_pcs;
 
+typedef struct {
+    uint8_t mycpu_mmios[3];
+} diff_mmios;
 
 // #define TRACE
 
@@ -22,6 +25,7 @@ void dut_step(int cycle, VerilatedVcdC *vfp, VerilatedContext *context);
 void dut_getregs(qemu_regs_t *regs);
 void dut_write_counter(int value);
 void dut_getpcs(diff_pcs *pcs);
+void dut_getmmios(diff_mmios *mmios);
 void dut_sync_reg(int saddr, int svalue, bool sync);
 
 #endif

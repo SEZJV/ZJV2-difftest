@@ -37,6 +37,28 @@ const char* init_cmds[] = {
     "qXfer:features:read:riscv-csr.xml:17f7,ffb"
 };
 
+const int csr_num_list[csrs_count] = {
+        0x346,  // mstatus
+        0x348,  // medeleg
+        0x349,  // mideleg
+        0x34a,  // mie
+        0x38a,  // mip
+        0x34b,  // mtvec
+        0x386,  // mscratch
+        0x387,  // mepc
+        0x388,  // mcause
+        0x389,  // mtval
+
+        0x146,  // sstatus
+        0x14a,  // sie
+        0x14b,  // stvec
+        0x186,  // scratch
+        0x187,  // sepc
+        0x188,  // scause
+        0x189,  // stval
+        0x18a,  // sip 
+    };
+
 int qemu_start(const char *elf, int port) {
     char remote_s[100];
     const char *exec = "qemu-system-riscv64";
@@ -265,39 +287,58 @@ bool qemu_setcsrs(qemu_conn_t *conn, int csr_num, uint64_t *data) {
     return ok;
 }
 
+bool qemu_set_csr(qemu_conn_t *conn, int csr_num, uint64_t *data) {
+    int len = sizeof(uint64_t);
+    char buf[2*4+128];
+
+    int p = snprintf(buf, sizeof(buf), "P%x=", csr_num_list[csr_num]); // 1+8+1+1+1 = 12
+    // printf("%s\n", buf);
+
+    void *src = data;
+    int i;
+    for (i = 0; i < len; i++) {
+        p += sprintf(buf + p, "%c%c",
+                     hex_encode(((uint8_t *) src)[i] >> 4),
+                     hex_encode(((uint8_t *) src)[i] & 0xf));
+    }
+    // printf("%s\n", buf);
+
+    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+    // free(buf);
+
+    size_t size;
+    uint8_t *reply = gdb_recv(conn, &size);
+    bool ok = !strcmp((const char *) reply, "OK");
+    // printf("%s\n", (const char *) reply);
+    assert(ok == true);
+    free(reply);
+
+    return ok;
+}
+
 void qemu_getcsrs(qemu_conn_t *conn, qemu_regs_t *r) {
-    const int csr_num_list[csrs_count] = {
-        0x346,  // mstatus
-        0x348,  // medeleg
-        0x349,  // mideleg
-        0x34a,  // mie
-        0x38a,  // mip
-        0x34b,  // mtvec
-        0x386,  // mscratch
-        0x387,  // mepc
-        0x388,  // mcause
-        0x389,  // mtval
-
-        0x146,  // sstatus
-        0x14a,  // sie
-        0x14b,  // stvec
-        0x186,  // scratch
-        0x187,  // sepc
-        0x188,  // scause
-        0x189,  // stval
-        0x18a,  // sip 
-    };
-
     for (int i = 0; i < csrs_count; i++) {
-        char buf[32];
-        snprintf(buf, sizeof(buf), "p%x", csr_num_list[i]);
-        gdb_send(conn, (const uint8_t *) buf, strlen(buf));
-        size_t size;
-        uint8_t *reply = gdb_recv(conn, &size);
+        qemu_get_csr(conn, i, &r->array[65 + i]);
+        // char buf[32];
+        // snprintf(buf, sizeof(buf), "p%x", csr_num_list[i]);
+        // gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+        // size_t size;
+        // uint8_t *reply = gdb_recv(conn, &size);
 
-        r->array[65 + i] = gdb_decode_hex_str(reply);
-        free(reply);
+        // r->array[65 + i] = gdb_decode_hex_str(reply);
+        // free(reply);
     }   
+}
+
+void qemu_get_csr(qemu_conn_t *conn, int csr_num, uint64_t *csr_data) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "p%x", csr_num_list[csr_num]);
+    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+    size_t size;
+    uint8_t *reply = gdb_recv(conn, &size);
+
+    *csr_data = gdb_decode_hex_str(reply);
+    free(reply);
 }
 
 void qemu_getfprs(qemu_conn_t *conn, qemu_regs_t *r) {
@@ -327,4 +368,24 @@ void qemu_init(qemu_conn_t *conn) {
         uint8_t *reply = gdb_recv(conn, &size);
         free(reply);
     }
+}
+
+void qemu_disable_int(qemu_conn_t *conn) {
+    const int mie_num = 3;
+    const uint64_t disable_mie_mtip = ~(1 << 7);
+    uint64_t *mie_data = (uint64_t *)malloc(sizeof(uint64_t));
+    qemu_get_csr(conn, mie_num, mie_data);
+    *mie_data &= disable_mie_mtip;
+    qemu_set_csr(conn, mie_num, mie_data);
+    free(mie_data);
+}
+
+void qemu_enable_int(qemu_conn_t *conn) {
+    const int mie_num = 3;
+    const uint64_t enable_mie_mtip = 1 << 7;
+    uint64_t *mie_data = (uint64_t *)malloc(sizeof(uint64_t));
+    qemu_get_csr(conn, mie_num, mie_data);
+    *mie_data |= enable_mie_mtip;
+    qemu_set_csr(conn, mie_num, mie_data);
+    free(mie_data);
 }

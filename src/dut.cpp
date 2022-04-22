@@ -46,6 +46,12 @@ void dut_step(int cycle, VerilatedVcdC *vfp, VerilatedContext *context) {
     }
 }
 
+void dut_getmmios(diff_mmios *mmios) {
+    mmios->mycpu_mmios[0] = dut->io_difftest_mmio_0;
+    mmios->mycpu_mmios[1] = dut->io_difftest_mmio_1;
+    mmios->mycpu_mmios[2] = dut->io_difftest_mmio_2;
+}
+
 void dut_getpcs(diff_pcs *pcs) {
     pcs->mycpu_pcs[0] = dut->io_difftest_pcs_0;
     pcs->mycpu_pcs[1] = dut->io_difftest_pcs_1;

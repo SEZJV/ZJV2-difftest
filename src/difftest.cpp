@@ -12,8 +12,11 @@
 
 int total_instructions;
 
-#define WAVE_TRACE
+// #define WAVE_TRACE
 // #define IPC_TRACE
+// #define NO_DIFF
+#define MIE_MTIE (1 << 7)
+#define MIP_MTIP (1 << 7)
 
 // dump qemu registers
 void print_qemu_registers(qemu_regs_t *regs, bool wpc) {
@@ -136,6 +139,12 @@ bool difftest_regs (qemu_regs_t *regs, qemu_regs_t *dut_regs, diff_pcs *dut_pcs)
     // CSR
     for (int i = 65; i < regs_count; i++) {
         if (i == 65 || i == 75) { continue; }   // skip `mstatus` and `sstatus`
+        if (i == 68) { // trust dut's `mie.MTIE`
+            regs->array[i] = (regs->array[i] & ~MIE_MTIE) | (dut_regs->array[i] & MIE_MTIE);
+        }
+        if (i == 69) { // trust dut's `mip.MTIP`
+            regs->array[i] = (regs->array[i] & ~MIP_MTIP) | (dut_regs->array[i] & MIP_MTIP);
+        }
         if (regs->array[i] != dut_regs->array[i]) {
             sleep(0.5);
             for (int j = 0; j < 3; j++) {
@@ -202,6 +211,12 @@ bool ysyx_skip_print(qemu_conn_t *conn, uint32_t pc) {
     return qemu_setinst(conn, pc, &nop);
 }
 
+bool is_stop = false;
+void stop(int signo) {
+    printf("receive CTRL C INT!\n");
+    is_stop = true;
+}
+
 int difftest_body(const char *path, int port) {
     int result = 0;
     Verilated::traceEverOn(true);
@@ -219,6 +234,7 @@ int difftest_body(const char *path, int port) {
     qemu_regs_t dut_regs = {0};
 
     diff_pcs dut_pcs = {0};
+    diff_mmios dut_mmios = {0};
     int bubble_count = 0;
 
     qemu_conn_t *conn = qemu_connect(port);
@@ -265,6 +281,18 @@ int difftest_body(const char *path, int port) {
     // a = qemu_getinst(conn, 0x80005394);
     // printf("0x80005394: %08x\n", a.val);
 
+
+    signal(SIGINT, stop);
+    // while(1) {
+    //     if (!is_stop) {
+    //         dut_sync_reg(0, 0, false);
+    //         dut_step(1, vfp, contextp);
+    //     }
+    //     else {
+    //         goto END;
+    //     }
+    // }
+
     while (1) {
         dut_step(1, vfp, contextp);
         if (check_and_close_difftest(conn, vfp, contextp))
@@ -287,6 +315,7 @@ int difftest_body(const char *path, int port) {
         }
 
         total_instructions += dut_commit();
+        dut_getmmios(&dut_mmios);
         for (int i = 0; i < dut_commit(); i++) {
             // get current instruction
             inst_t inst = qemu_getinst(conn, regs.pc);
@@ -301,10 +330,11 @@ int difftest_body(const char *path, int port) {
             //     ysyx_skip_print(conn, regs.pc);
             // }
             qemu_single_step(conn);
-            qemu_getregs(conn, &regs);
+            qemu_disable_int(conn);
             sleep(0.25);
 
 #ifdef TRACE
+            qemu_getregs(conn, &regs);
             printf("\nQEMU\n");
             print_qemu_registers(&regs, true);
             printf("\nDUT\n");
@@ -315,6 +345,16 @@ int difftest_body(const char *path, int port) {
             print_qemu_registers(&dut_regs, false);
             printf("==============\n");
 #endif
+        }
+        dut_getpcs(&dut_pcs);
+        if ((dut_mmios.mycpu_mmios[0] || dut_mmios.mycpu_mmios[1] || dut_mmios.mycpu_mmios[2]) && dut->io_difftest_we) { // sync mmio data
+            // printf("mmio: %d, we: %d, wdata: %lx, reg_num: %d\n", dut_mmios.mycpu_mmios[0] || dut_mmios.mycpu_mmios[1] || dut_mmios.mycpu_mmios[2], dut->io_difftest_we, dut->io_difftest_wdata, dut->io_difftest_wdest);
+            qemu_getregs(conn, &regs);
+            regs.gpr[dut->io_difftest_wdest] = dut->io_difftest_wdata;
+            qemu_setregs(conn, &regs);
+        }
+        if (dut->io_difftest_int) {
+            qemu_enable_int(conn);
         }
 
         qemu_getregs(conn, &regs);
@@ -338,7 +378,7 @@ int difftest_body(const char *path, int port) {
             break;
         }
     }
-
+    END:
 #ifdef WAVE_TRACE
     dut_step(3, vfp, contextp);
     vfp->close();
