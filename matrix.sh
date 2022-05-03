@@ -8,22 +8,24 @@ main() {
     dt_ret_code=0
     
     make -j
-
-    for FILE in cases/riscv-tests/*; do
+    test_dir=riscv-tests
+    for FILE in cases/$test_dir/*; do
         elf=${FILE:6}
+        amo="amo"
+        if [[ "$elf" =~ "amo" ]]; then
+            echo -e "Start testing on ${CYAN}${elf}${NC} !!!"
 
-        echo -e "Start testing on ${CYAN}${elf}${NC} !!!"
-
-        make prepare ELF=/$elf
-        pushd build
-        ./emulator
+            make prepare ELF=/$elf
+            pushd build
+            ./emulator
         
-        ret_code=$?
-        if [ $ret_code != 0 ]; then
-            dt_ret_code=1
-        fi    
+            ret_code=$?
+            if [ $ret_code != 0 ]; then
+                dt_ret_code=1
+            fi    
         
-        popd
+            popd
+        fi
     done 
     return $dt_ret_code
 }
