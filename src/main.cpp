@@ -6,6 +6,7 @@
 #include "difftest.h"
 
 uint64_t elf_entry = 0x80000000;
+// uint64_t elf_entry = 0x1000;
 
 
 int main() {
