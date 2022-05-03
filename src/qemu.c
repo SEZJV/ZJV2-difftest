@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/prctl.h>
 #include <unistd.h>
+#include <malloc.h>
 
 #include "qemu.h"
 
@@ -60,11 +61,12 @@ const int csr_num_list[csrs_count] = {
     };
 
 int qemu_start(const char *elf, int port) {
-    char remote_s[100];
+    // char remote_s[100];
     const char *exec = "qemu-system-riscv64";
-    snprintf(remote_s, sizeof(remote_s), "tcp::%d", port);
+    // snprintf(remote_s, sizeof(remote_s), "tcp::%d", port);
 
-    execlp(exec, exec, "-S", "-gdb", remote_s, "-bios", elf, "-M", "virt", "-m", "64M", "-nographic", NULL);
+    // execlp(exec, exec, "-S", "-gdb", remote_s, "-bios", elf, "-M", "virt", "-m", "64M", "-nographic", NULL);
+    execlp(exec, exec, "-S", "-s", "-bios", elf, "-M", "virt", "-m", "64M", "-nographic", NULL);
 
     return -1;
 }
@@ -252,6 +254,24 @@ uint64_t qemu_getmem(qemu_conn_t *conn, uint32_t addr) {
     reply[8] = '\0';
     uint64_t content = gdb_decode_hex_str(reply);
     printf("0x%x: %08lx\n", addr, content);
+
+    free(reply);
+    return content;
+}
+
+uint64_t qemu_read_mem(qemu_conn_t *conn, uint32_t addr, int nbyte) {
+    assert(nbyte <= 8);
+    int buf_size = 2 * nbyte + 20;
+    char *buf = (char *) malloc(buf_size);
+    snprintf(buf, buf_size, "m0x%x,%x", addr, nbyte);
+    gdb_send(conn, (const uint8_t *) buf, strlen(buf));
+
+    size_t size;
+    uint8_t *reply = gdb_recv(conn, &size);
+    
+    reply[size] = '\0';
+    uint64_t content = gdb_decode_hex_str(reply);
+    // printf("0x%x: %016lx\n", addr, content);
 
     free(reply);
     return content;
