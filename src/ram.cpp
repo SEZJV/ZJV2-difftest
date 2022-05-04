@@ -144,14 +144,14 @@ void init_ram(const char *img, qemu_conn_t *conn) {
     assert(ret == 1);
     fclose(fp);
 
-    int nbyte = 8;
-    uint64_t fdt_load_addr = 0x83000000;
-    uint64_t addr, idx;
-    for (int i = 0; i < 0x1000 / nbyte; i++) {
-        addr = fdt_load_addr + i * nbyte;
-        idx = (addr - 0x80000000) / sizeof(uint64_t);
-        ram[idx] = qemu_read_mem(conn, addr, nbyte);
-    }
+    // int nbyte = 8;
+    // uint64_t fdt_load_addr = 0x83000000;
+    // uint64_t addr, idx;
+    // for (int i = 0; i < 0x1000 / nbyte; i++) {
+    //     addr = fdt_load_addr + i * nbyte;
+    //     idx = (addr - 0x80000000) / sizeof(uint64_t);
+    //     ram[idx] = qemu_read_mem(conn, addr, nbyte);
+    // }
 
 #ifdef WITH_DRAMSIM3
 #if !defined(DRAMSIM3_CONFIG) || !defined(DRAMSIM3_OUTDIR)
