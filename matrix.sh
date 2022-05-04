@@ -8,11 +8,11 @@ main() {
     dt_ret_code=0
     
     make -j
-    test_dir=riscv-tests
+    test_dir=common
     for FILE in cases/$test_dir/*; do
         elf=${FILE:6}
         amo="amo"
-        if [[ "$elf" =~ "amo" ]]; then
+        if [[ "$elf" =~ "" ]]; then
             echo -e "Start testing on ${CYAN}${elf}${NC} !!!"
 
             make prepare ELF=/$elf

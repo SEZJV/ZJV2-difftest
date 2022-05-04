@@ -18,8 +18,9 @@ int total_instructions;
 // #define NO_DIFF
 // #define RUN_QEMU_ONLY
 // #define SYNC_MMIO
-#define FW_OPENSBI
+// #define FW_OPENSBI
 // #define SYNC_TIME_INT
+// #define USE_BR_POINT
 #define MIE_MTIE (1 << 7)
 #define MIP_MTIP (1 << 7)
 
@@ -266,8 +267,7 @@ int difftest_body(const char *path, int port) {
     qemu_continue(conn);
     qemu_remove_breakpoint(conn, elf_entry);
     qemu_setregs(conn, &regs);
-    // qemu_getregs(conn, &regs);
-    qemu_read_mem(conn, 0x83000008, 8);
+
 
     init_ram("testfile.bin", conn);
 
@@ -299,7 +299,6 @@ int difftest_body(const char *path, int port) {
 #ifdef NO_DIFF
     while(1) {
         if (!is_stop) {
-            dut_sync_reg(0, 0, false);
             dut_step(1, vfp, contextp);
         }
         else {
@@ -309,6 +308,7 @@ int difftest_body(const char *path, int port) {
 #endif
 
 #ifdef RUN_QEMU_ONLY
+#if !defined(NO_DIFF)
     while(1) {
         if (!is_stop) {
             qemu_single_step(conn);
@@ -320,13 +320,24 @@ int difftest_body(const char *path, int port) {
         }
     }
 #endif
+#endif
+
+#ifdef USE_BR_POINT
+    uint64_t br_point = 0x8000f3b8;
+    bool first_hit = true;
+    qemu_break(conn, br_point);
+    qemu_continue(conn);
+    qemu_getregs(conn, &regs);
+    printf("QEMU break at pc: [%016lx]\n", regs.pc);
+#endif
+
 
     while (1) {
+        if (is_stop) break;
         dut_step(1, vfp, contextp);
         if (check_and_close_difftest(conn, vfp, contextp))
             return 0;
         bubble_count = 0;
-        dut_sync_reg(0, 0, false);
 
         while (dut_commit() == 0) {
             dut_step(1, vfp, contextp);
@@ -343,10 +354,23 @@ int difftest_body(const char *path, int port) {
         }
 
         total_instructions += dut_commit();
-        dut_getmmios(&dut_mmios);
+
+#ifdef USE_BR_POINT
+        dut_getpcs(&dut_pcs);
+        if (first_hit && dut_pcs.mycpu_pcs[0] != br_point && dut_pcs.mycpu_pcs[1] != br_point && dut_pcs.mycpu_pcs[2] != br_point) {
+            continue;
+        } else {
+            if (first_hit) {
+                sleep(0.25);
+                printf("hit DUT pc [%016lx]\n", br_point);
+            }
+
+            first_hit = false;
+        }
+#endif
         for (int i = 0; i < dut_commit(); i++) {
             // get current instruction
-            inst_t inst = qemu_getinst(conn, regs.pc);
+            // inst_t inst = qemu_getinst(conn, regs.pc);
            
             // if (inst_is_load_uart(inst, &regs)) {
             //     printf("[DEBUG] is load uart | pc: %08x | inst: %08x\n", regs.pc, inst.val);
@@ -376,11 +400,20 @@ int difftest_body(const char *path, int port) {
             printf("==============\n");
 #endif
         }
-        dut_getpcs(&dut_pcs);
+        
 
 #ifdef SYNC_MMIO
+        dut_getmmios(&dut_mmios);
+        dut_getpcs(&dut_pcs);
         if ((dut_mmios.mycpu_mmios[0] || dut_mmios.mycpu_mmios[1] || dut_mmios.mycpu_mmios[2]) && dut->io_difftest_we) { // sync mmio data
-            printf("mmio: %d, we: %d, wdata: %lx, reg_num: %d\n", dut_mmios.mycpu_mmios[0] || dut_mmios.mycpu_mmios[1] || dut_mmios.mycpu_mmios[2], dut->io_difftest_we, dut->io_difftest_wdata, dut->io_difftest_wdest);
+            // int idx = -1;
+            // for (int i = 0; i < 3; i++) {
+            //     if (dut_mmios.mycpu_mmios[i]) {
+            //         idx = i;
+            //         break;
+            //     }
+            // }
+            // printf("sync pc: [%016lx], sync wdata: [%016lx], sync reg_num: %d\n", dut_pcs.mycpu_pcs[idx], dut->io_difftest_wdata, dut->io_difftest_wdest);
             qemu_getregs(conn, &regs);
             regs.gpr[dut->io_difftest_wdest] = dut->io_difftest_wdata;
             qemu_setregs(conn, &regs);
