@@ -18,7 +18,7 @@ The following is a simple use case:
 
 ```bash
 $ cd ZJV2-difftest
-$ make prepare ELF=riscv-tests/rv64um-p-div
+$ make prepare ELF=riscv-tests/rv64um-p-div.elf
 $ make
 $ cd build && ./emulator
 ```

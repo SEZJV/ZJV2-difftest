@@ -1,0 +1,6 @@
+minstret
+pmpaddr0
+mhpmcounter10
+mhpmevent10
+pmpcfg0
+ustatus
