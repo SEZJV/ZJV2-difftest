@@ -13,13 +13,13 @@
 
 int total_instructions;
 
-// #define WAVE_TRACE
+#define WAVE_TRACE
 // #define IPC_TRACE
 // #define NO_DIFF
 // #define RUN_QEMU_ONLY
-// #define SYNC_MMIO
+#define SYNC_MMIO
 // #define FW_OPENSBI
-// #define SYNC_TIME_INT
+#define SYNC_TIME_INT
 // #define USE_BR_POINT
 #define MIE_MTIE (1 << 7)
 #define MIP_MTIP (1 << 7)
