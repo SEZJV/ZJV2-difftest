@@ -12,7 +12,7 @@ OBJ         := $(patsubst $(SRC_DIR)/%.c $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC))
 CC          := gcc
 CFLAGS      := -I$(INCLUDE_DIR) -O3
 
-VERILATOR_VSRC_DIR	:=	./../build/verilog/base
+VERILATOR_VSRC_DIR	:=	$(VSRC_DIR)
 VERILATOR_CSRC_DIR	:=	$(CURDIR)/src
 VERILATOR_DEST_DIR	:=	$(TARGET_DIR)/verilator
 VERILATOR_CXXFLAGS	:=	-O3 -std=c++11 -fpermissive -g -I$(VERILATOR_CSRC_DIR) -I$(VERILATOR_DEST_DIR)/build -I$(INCLUDE_DIR)
@@ -43,7 +43,6 @@ prepare:
 	cp -v $(CASES_DIR)/$(ELF) $(TARGET_DIR)/testfile.elf
 	$(CROSS_COMPILE)objdump -d $(TARGET_DIR)/testfile.elf > $(TARGET_DIR)/testfile.dump
 	$(CROSS_COMPILE)objcopy -O binary $(TARGET_DIR)/testfile.elf $(TARGET_DIR)/testfile.bin
-	$(CROSS_COMPILE)objdump -d $(TARGET_DIR)/testfile.elf > $(TARGET_DIR)/testfile.dump
 	od -t x1 -An -w1 -v $(TARGET_DIR)/testfile.bin > $(TARGET_DIR)/testfile.hex
 
 

@@ -374,8 +374,10 @@ static uint8_t* recv_packet(FILE *in, size_t *ret_size, bool* ret_sum_ok) {
 
   if (ferror(in))
     err(1, "recv");
-  else if (feof(in))
+  else if (feof(in)) {
+    printf("\x1B[32mpass!!!\x1B[0m\n");
     errx(0, "recv: Connection closed");
+  }
   else
     errx(1, "recv: Unknown connection error");
 }
